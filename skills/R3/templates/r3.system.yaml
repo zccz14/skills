@@ -1,0 +1,172 @@
+system:
+  name: example-r3-system
+  version: 0.1.0
+  boundary: "Define what this reasoning system is responsible for explaining."
+  target_classes:
+    - "Define a class of observations or problems the system should cover."
+  observation_capacity:
+    - "Define available evidence, measurements, records, or observations."
+  max_recursion_depth: 4
+  reasoning_cost_limit: "Define when further expansion is not worth the cost."
+  evidence_availability_required: true
+
+nodes:
+  - id: S0
+    label: root reasoning space
+    type: atomic
+    parent: null
+    observable: "A target observation requires explanation."
+    rule: "Route the target to an atomic node, combination space, or residual."
+    action: "Start an R3 trace."
+    not_handled: []
+    changed_by_actions: []
+    next_if_failed: X0
+    closed: false
+
+  - id: C0
+    label: combination space
+    type: combination
+    parent: S0
+    observable: "Individual nodes do not explain the target, but their relation may."
+    rule: "Route to temporal, priority, interaction, state, context, feedback, or another explicit relation."
+    action: "Decompose the relation and define a testable next space."
+    not_handled: []
+    changed_by_actions: []
+    next_if_failed: X0
+    closed: false
+
+  - id: X0
+    label: root residual
+    type: residual
+    parent: S0
+    residual_name: unexplained-root-target
+    reason_unresolved: "The current node set cannot explain the target."
+    expand_to: S1
+    stop_reason_if_blocked: model_lack
+    closed: false
+
+combination_spaces:
+  - id: C0.T
+    label: temporal or ordering relation
+    parent: C0
+  - id: C0.W
+    label: weight, priority, or allocation relation
+    parent: C0
+  - id: C0.I
+    label: interaction relation
+    parent: C0
+  - id: C0.S
+    label: state, mode, or context transition relation
+    parent: C0
+  - id: C0.F
+    label: feedback relation
+    parent: C0
+  - id: C0.H
+    label: threshold relation
+    parent: C0
+  - id: C0.C
+    label: context dependency relation
+    parent: C0
+
+relations:
+  - from: S0
+    to: C0
+    type: contains
+  - from: S0
+    to: X0
+    type: contains
+  - from: X0
+    to: S1
+    type: expands
+  - from: C0
+    to: C0.I
+    type: decomposes
+  - from: C0
+    to: C0.F
+    type: decomposes
+  - from: C0
+    to: C0.H
+    type: decomposes
+  - from: C0
+    to: C0.C
+    type: decomposes
+
+stop_reasons:
+  - id: evidence_lack
+    label: required evidence is missing
+    next_move: "Add observation, instrumentation, records, or research."
+  - id: model_lack
+    label: the current abstraction is insufficient
+    next_move: "Introduce a new concept, model, or representation."
+  - id: sample_lack
+    label: available cases are insufficient
+    next_move: "Gather more cases or wait for more observations."
+  - id: cost_limit
+    label: expansion cost exceeds current value
+    next_move: "Pause recursion and record the risk."
+  - id: boundary_limit
+    label: the issue is outside the current boundary
+    next_move: "Expand the boundary or hand off to another system."
+
+trace_requirements:
+  - r3_node
+  - parent_node
+  - handled_node
+  - not_handled_nodes
+  - changed_nodes
+  - observable
+  - rule
+  - action
+  - evidence
+  - evidence_availability
+  - evidence_metric
+  - residual
+  - expanded_to
+  - next_if_failed
+  - closed
+  - closure_type
+
+known_traces:
+  - id: trace-0001
+    status: example
+    path:
+      - S0
+      - X0
+    conclusion: "Replace this example with an accepted project trace."
+    evidence: []
+    closed: false
+
+open_residuals:
+  - id: X0
+    status: planned
+    owner: "Define who or what process will expand this residual."
+
+priority_expansions:
+  - id: X0
+    reason: "Root residual has not been expanded yet."
+    next_space: S1
+
+coverage:
+  - target_class: "Define a target class."
+    initial_route: S0
+    terminal_path_exists: false
+    residual_if_not: X0
+    last_reviewed: null
+
+deprecated_nodes:
+  - old_id: null
+    replaced_by: null
+    reason: "Use this section when a stable node is replaced."
+    version: null
+
+rebuild_history:
+  - id: rebuild-0001
+    timestamp: null
+    sources:
+      - "List source files, records, or notes used to rebuild this data file."
+    summary: "Initial template record. Replace after a real rebuild."
+    preserved_ids: []
+    renamed_ids: []
+    unresolved_gaps:
+      - "List missing or uncertain parts that remain residuals or need review."
+    review_required: true
