@@ -40,9 +40,9 @@ Run from the intended main checkout:
 "$CZ_GIT_STYLE_SCRIPTS/init-repo.sh" --repo OWNER/REPO --visibility private
 ```
 
-Pass `--repo OWNER/REPO` and `--visibility public|private|internal` explicitly. Use this once for a new repository. It initializes `main`, commits only `.gitignore`, creates and pushes the GitHub repository, enables Auto Merge and remote branch deletion, disables merge/rebase commits, enables squash, and creates the `cz-git-style` ruleset requiring PRs and linear history while blocking deletion and force-push.
+Pass `--repo OWNER/REPO` and `--visibility public|private|internal` explicitly. Use this once for a new repository. It initializes `main`, creates and pushes the GitHub repository, enables Auto Merge and remote branch deletion, disables merge/rebase commits, enables squash, and creates the active `cz-git-style` ruleset requiring PRs, linear history, and the fixed `pr-check` status while blocking deletion and force-push. The generated `.github/workflows/pr-check.yml` runs that minimal synchronization gate on every pull request so Auto Merge waits for a check; it does not replace project validation.
 
-Workflow scripts do not create semantic code or documentation commits. The sole exception is repository initialization: `init-repo.sh` creates a gitmoji initialization commit containing only `.gitignore`.
+Workflow scripts do not create semantic code or documentation commits. The sole exception is repository initialization: `init-repo.sh` creates a gitmoji initialization commit containing only `.gitignore` and `.github/workflows/pr-check.yml` as repository policy scaffolding.
 
 ## Deliver a change
 
