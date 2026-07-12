@@ -1,6 +1,6 @@
 ---
 name: cz-git-style
-description: Enforce CZ's Git and GitHub delivery style with gitmoji commits, protected main, repository-local worktrees, squash-only Auto Merge, pull-request monitoring, GitHub Actions verification, and safe cleanup. Use whenever Codex initializes or configures a GitHub repository, creates a feature worktree, prepares or opens a pull request, follows a pull request through merge and Actions, or performs the associated Git workflow.
+description: Enforce CZ's Git and GitHub delivery style with gitmoji commits, protected main, repository-local worktrees, squash-only Auto Merge, pull-request monitoring, GitHub Actions verification, and safe cleanup. Use whenever Codex sets up or updates a GitHub repository, creates a feature worktree, prepares or opens a pull request, follows a pull request through merge and Actions, or performs the associated Git workflow.
 ---
 
 # CZ Git Style
@@ -11,7 +11,7 @@ Resolve the bundled `scripts/` directory from this loaded `SKILL.md` to an absol
 
 ```bash
 CZ_GIT_STYLE_SCRIPTS="/absolute/path/to/loaded/cz-git-style/scripts"
-"$CZ_GIT_STYLE_SCRIPTS/init-repo.sh" --help
+"$CZ_GIT_STYLE_SCRIPTS/setup-repo.sh" --help
 "$CZ_GIT_STYLE_SCRIPTS/sync-main.sh" --help
 "$CZ_GIT_STYLE_SCRIPTS/start-worktree.sh" --help
 "$CZ_GIT_STYLE_SCRIPTS/open-pr.sh" --help
@@ -32,17 +32,17 @@ Follow the standard [gitmoji convention](https://gitmoji.dev/) and select the gi
 
 Commit changed tracked files and intended new files before declaring work complete or handing it to a human. During active edits or a `clean-agent` `RETRY`, continue without checkpoint commits. Before delivering `PASS` or escalating `FAILED`, commit the current state; create no empty commit for read-only or unchanged work. Let AI choose the commit meaning and standard gitmoji—do not automate commit creation.
 
-## Initialize or configure a repository
+## Set up repository policy
 
 Run from the intended main checkout:
 
 ```bash
-"$CZ_GIT_STYLE_SCRIPTS/init-repo.sh" --repo OWNER/REPO --visibility private
+"$CZ_GIT_STYLE_SCRIPTS/setup-repo.sh" --repo OWNER/REPO
 ```
 
-Pass `--repo OWNER/REPO` and `--visibility public|private|internal` explicitly. Use this once for a new repository. It initializes `main`, creates and pushes the GitHub repository, enables Auto Merge and remote branch deletion, disables merge/rebase commits, enables squash, and creates the active `cz-git-style` ruleset requiring PRs, linear history, and the fixed `pr-check` status while blocking deletion and force-push. The generated `.github/workflows/pr-check.yml` runs that minimal synchronization gate on every pull request so Auto Merge waits for a check; it does not replace project validation.
+Run this desired-state setup for new or existing repositories. Pass `--visibility public|private|internal` only when the GitHub repository may need creation; setup requires it before creating a repository. It never replaces a different `origin`. Repeated runs converge the policy files, repository settings, and the single repository-owned `cz-git-style` ruleset. The ruleset requires PRs, linear history, and the fixed `pr-check` status while blocking deletion and force-push. The generated `.github/workflows/pr-check.yml` runs that minimal synchronization gate on every pull request; it does not replace project validation.
 
-Workflow scripts do not create semantic code or documentation commits. The sole exception is repository initialization: `init-repo.sh` creates a gitmoji initialization commit containing only `.gitignore` and `.github/workflows/pr-check.yml` as repository policy scaffolding.
+Workflow scripts do not create semantic code or documentation commits. The sole exception is `setup-repo.sh`: when policy files drift, it commits only `.gitignore` and `.github/workflows/pr-check.yml`; unchanged setup creates no commit or push.
 
 ## Deliver a change
 
