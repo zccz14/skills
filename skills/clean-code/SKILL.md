@@ -1,11 +1,19 @@
 ---
 name: clean-code
-description: Use for every coding task to control flow complexity. Enforces a complexity gate that treats each branch as an added logical path requiring explicit business justification, especially during implementation and code review.
+description: Use for every coding task to control flow complexity. For any task that creates or modifies code, also use clean-agent coordination mode so creator and reviewer SubAgents apply clean-code as their shared code specification. Enforces a complexity gate that treats each branch as an added logical path requiring explicit business justification, especially during implementation and code review.
 ---
 
 # clean-code
 
 Keep code correct by controlling flow complexity.
+
+## Coordination Requirement
+
+For any task that creates or modifies code, including implementation, refactoring, and debugging fixes, require the main Agent to use `clean-agent` coordination mode. Keep `clean-code` as the domain gate: pass it to both the creator and reviewer as the same shared specification. Let `clean-agent` own role separation, review, retries, and escalation; do not replace this skill's complexity criteria with orchestration rules.
+
+Treat the current role as already inside a `clean-agent` loop only when the task explicitly assigns `clean-agent` creation mode or review mode and provides the same shared specification sources plus the applicable artifact paths or review contract. Then perform that role directly without dispatching another SubAgent or starting a nested loop. Being a SubAgent, receiving a delegated task, or being asked to write a file does not qualify for this exemption.
+
+Apply `clean-code` directly to read-only code explanation, diagnosis, or review only when the task does not create or modify an artifact.
 
 ## When to use
 

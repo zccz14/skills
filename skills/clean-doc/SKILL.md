@@ -1,11 +1,19 @@
 ---
 name: clean-doc
-description: Use this skill whenever the user asks to write, rewrite, shorten, clarify, review, polish, restructure, or adapt documentation or any human-facing explanatory text. It turns information into purpose-driven communication for a specific audience and decision context. It prioritizes the reader's native language and habitual language style, preserves only decision-relevant information, and avoids bloated background, excessive completeness, and domain-specific assumptions unless the current context explicitly defines them.
+description: Use this skill whenever the user asks to write, rewrite, shorten, clarify, review, polish, restructure, or adapt documentation or any human-facing explanatory text. For any task that creates or modifies a document, also use clean-agent coordination mode so creator and reviewer SubAgents apply clean-doc as their shared communication specification. It turns information into purpose-driven communication for a specific audience and decision context, prioritizes the reader's language and style, and preserves only decision-relevant information.
 ---
 
 # Clean Doc
 
 Clean Doc helps transform text into efficient communication for a specific reader, situation, and intended effect. The goal is not to preserve all available information. The goal is to help the reader understand what matters, decide what to do, and act with the right level of confidence.
+
+## Coordination Requirement
+
+For any task that creates or modifies a document or other human-facing text, require the main Agent to use `clean-agent` coordination mode. Keep `clean-doc` as the domain gate: pass it to both the creator and reviewer as the same shared specification. Let `clean-agent` own role separation, review, retries, and escalation; do not replace this skill's communication criteria with orchestration rules.
+
+Treat the current role as already inside a `clean-agent` loop only when the task explicitly assigns `clean-agent` creation mode or review mode and provides the same shared specification sources plus the applicable artifact paths or review contract. Then perform that role directly without dispatching another SubAgent or starting a nested loop. Being a SubAgent, receiving a delegated task, or being asked to write a file does not qualify for this exemption.
+
+Apply `clean-doc` directly to a read-only explanation or critique only when the task does not create or modify an artifact.
 
 ## First Principles
 
