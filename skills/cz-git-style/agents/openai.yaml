@@ -1,0 +1,4 @@
+interface:
+  display_name: "CZ Git Style"
+  short_description: "Enforce a safe GitHub squash workflow"
+  default_prompt: "Use $cz-git-style to initialize and run this repository through the standard GitHub worktree and squash-merge workflow."
