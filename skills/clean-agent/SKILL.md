@@ -59,7 +59,17 @@ Keep creation, review, and coordination separate because self-review hides error
 
 SubAgents should actively read the conversation history snapshot when they need full prior context. The main Agent should not spend tokens translating or retelling long conversation history into each SubAgent prompt.
 
-For OpenCode, create a snapshot before dispatching a creator or reviewer:
+Choose the dumper for the host platform before dispatching a creator or reviewer.
+
+For Codex, copy the raw persisted rollout JSONL:
+
+```bash
+node scripts/dump_messages_codex.js --out /tmp/clean-agent-messages.jsonl
+```
+
+Pass `--session THREAD_ID` when the current task is not the uniquely latest persisted rollout. The script respects `${CODEX_HOME:-~/.codex}` and copies the source bytes exactly as persisted: it does not parse, filter, redact, or reserialize JSONL. The output is a private, atomically published point-in-time snapshot. For an active task, it includes only the source prefix present when the rollout is opened and measured; later events are not included. Raw rollouts can contain conversation text, source code, command output, credentials, and tool data, so keep the snapshot private and delete it when the loop no longer needs it. “Raw and complete” means the complete persisted event record through that snapshot point, not undisclosed model internals.
+
+For OpenCode, export its current session:
 
 ```bash
 node scripts/dump_messages_opencode.js --out /tmp/clean-agent-messages.json

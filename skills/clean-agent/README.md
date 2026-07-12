@@ -73,8 +73,11 @@ clean-agent/
 ├── LICENSE
 ├── README.md
 ├── SKILL.md
-└── scripts/
+├── scripts/
+    ├── dump_messages_codex.js
     └── dump_messages_opencode.js
+└── tests/
+    └── dump_messages_codex.test.js
 ```
 
 ## Usage
@@ -87,7 +90,15 @@ Ask the main Agent to coordinate a clean-agent loop, or assign a SubAgent one of
 
 The most important habit is to pass shared specification references, not long pasted specifications, to both creator and reviewer. Examples include a skill name, file path, section heading, issue, design doc, conversation history snapshot, or concise user constraints from the current request. Preserve the user's original language, terminology, names, and quoted constraints when passing instructions to SubAgents; do not translate everything into English just to normalize the prompt.
 
-For OpenCode, the main Agent can write its current conversation history to a temporary file before dispatching SubAgents:
+For Codex, the main Agent can copy the raw persisted rollout JSONL to a private point-in-time snapshot before dispatching SubAgents:
+
+```bash
+node scripts/dump_messages_codex.js --out /tmp/clean-agent-messages.jsonl
+```
+
+Use `--session THREAD_ID` unless the desired task is the uniquely latest persisted rollout. The file is copied byte for byte without parsing, filtering, redaction, or reserialization. An active rollout snapshot contains only events persisted when copying starts; later events are not included. Treat the snapshot as sensitive and delete it after use.
+
+For OpenCode, export the current conversation history:
 
 ```bash
 node scripts/dump_messages_opencode.js --out /tmp/clean-agent-messages.json
