@@ -1,0 +1,14 @@
+name: pr-check
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  pr-check:
+    name: pr-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm pull request gate
+        run: 'true'
