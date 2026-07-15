@@ -1,71 +1,71 @@
 # clean-agent
 
-`clean-agent` is a reusable skill for running adversarial generate-review-repair and explore-review-retry loops while keeping the main Agent context clean.
+`clean-agent` 是一项可复用技能，用于运行对抗式的生成—审查—修复循环和探索—审查—重试循环，同时保持主 Agent 上下文整洁。
 
-It is not a skill for creating agent files specifically. In this skill, an agent means an AI role: a creator, a reviewer, or a coordinator. The pattern applies to documents, specs, plans, prompts, reports, code proposals, UI descriptions, exploratory research, agent files, and other AI-generated artifacts or findings.
+它并不是一项专门用于创建智能体文件的技能。在本技能中，智能体指一种 AI 角色：创建者、审查者或协调者。该模式适用于文档、规范、计划、提示词、报告、代码提案、UI 描述、探索性研究、智能体文件，以及其他由 AI 生成的工件或发现。
 
-The goal is to clean the main Agent context, not the SubAgent context. When a task may fail or need several attempts, the failed drafts, dead ends, partial findings, and repair details do not need to be folded back into the main Agent's conversation. They can stay inside the SubAgent loop. Human attention is still expensive, but the main Agent's context window is also expensive: it should grow slowly by receiving only compact results.
+目标是清理主 Agent 上下文，而不是 SubAgent 上下文。当任务可能失败或需要多次尝试时，失败的草稿、死胡同、局部发现和修复细节都无须折回主 Agent 的对话中。它们可以留在 SubAgent 循环内部。人工注意力仍然昂贵，但主 Agent 的上下文窗口同样昂贵：它应只接收紧凑的结果，从而缓慢增长。
 
-`clean-agent` also avoids a common SubAgent anti-pattern: repeatedly passing messages between agents by having the main Agent summarize or paste large amounts of context into every SubAgent prompt. That burns the main Agent's context window and loses information, because each retelling filters, compresses, translates, or reframes the original conversation.
+`clean-agent` 还避免了一种常见的 SubAgent 反模式：让主 Agent 总结上下文或将大量上下文粘贴进每个 SubAgent 提示词，从而反复在智能体之间传递消息。这会消耗主 Agent 的上下文窗口并造成信息损失，因为每次转述都会筛选、压缩、翻译或重新框定原始对话。
 
-The better pattern is to let SubAgents read the main Agent's context directly as a file. Before dispatching a SubAgent, the main Agent exports its full conversation context to a temporary snapshot file and passes only that path. The SubAgent can then use normal file-oriented exploration: read the snapshot, search within it, follow references, and extract the parts relevant to its task.
+更好的模式是让 SubAgent 以文件形式直接读取主 Agent 的上下文。在派发 SubAgent 之前，主 Agent 将完整对话上下文导出到临时快照文件，并且只传递该路径。随后，SubAgent 可以采用常规的面向文件探索方式：读取快照、在其中搜索、跟随引用，并提取与自身任务相关的部分。
 
-This is not about saving the SubAgent's context window. It is about saving the main Agent's context window. The SubAgent is allowed to spend context while it works independently. When it finishes, only its concise result returns to the main Agent, so the main Agent's context grows slowly instead of absorbing every intermediate detail. This is roughly a fork-and-join model: fork context to a file, let the SubAgent work from that file, then join back with a small result.
+这并不是为了节省 SubAgent 的上下文窗口，而是为了节省主 Agent 的上下文窗口。SubAgent 在独立工作时可以消耗上下文。完成后，只有其简洁结果会返回主 Agent，因此主 Agent 的上下文只会缓慢增长，而不会吸收每个中间细节。这大体上是一种分叉—汇合模型：将上下文分叉到文件，让 SubAgent 根据该文件工作，然后用一个小结果汇合回来。
 
-## When To Use
+## 何时使用
 
-Use `clean-agent` when you want:
+当你需要以下能力时，请使用 `clean-agent`：
 
-- Generation or exploratory work where the first result may be wrong.
-- A task that may need multiple attempts before it succeeds.
-- Intermediate attempts, failed paths, and large exploratory notes kept out of the main Agent context.
-- A creator SubAgent to write an artifact to disk.
-- An independent reviewer SubAgent to read-only review it.
-- A main Agent to coordinate retries without showing low-quality drafts to the user.
-- A strict PASS / RETRY / FAILED gate before human review.
+- 首次结果可能有误的生成或探索性工作。
+- 可能需要多次尝试才能成功的任务。
+- 将中间尝试、失败路径和大量探索笔记保留在主 Agent 上下文之外。
+- 由创建者 SubAgent 将工件写入磁盘。
+- 由独立审查者 SubAgent 对其进行只读审查。
+- 由主 Agent 协调重试，而不向用户展示低质量草稿。
+- 在人工审查之前设置严格的 PASS / RETRY / FAILED 关卡。
 
-## Why Adversarial Loops
+## 为什么使用对抗式循环
 
-Large AI models often struggle to satisfy many constraints at the same time. Given 20 requirements, a model may produce an answer that follows the most salient 5 to 10 while quietly missing the rest. This is not just carelessness; attention is limited, and generation tends to optimize for a plausible complete answer rather than exhaustive constraint satisfaction.
+大型 AI 模型往往难以同时满足众多约束。面对 20 项要求时，模型可能生成一份遵循最显眼的 5 到 10 项、却悄然遗漏其余要求的答案。这不仅仅是粗心所致；注意力有限，而生成过程倾向于优化出一个看似完整的答案，而不是穷尽式地满足约束。
 
-`clean-agent` uses an adversarial loop to split that burden:
+`clean-agent` 使用对抗式循环来拆分这项负担：
 
-- A creator SubAgent focuses on producing the artifact.
-- An independent reviewer SubAgent focuses on finding missed constraints, weak spots, and specification violations.
-- The coordinator routes `RETRY` feedback back into repair without spending human attention.
+- 创建者 SubAgent 专注于生成工件。
+- 独立审查者 SubAgent 专注于发现遗漏的约束、薄弱环节和规范违规。
+- 协调者将 `RETRY` 反馈送回修复环节，而不消耗人工注意力。
 
-The creator and reviewer need to be in tension. The reviewer is not another writer polishing the same draft; it is a constraint checker looking for what the creator failed to notice. This architecture accepts that one model pass is often not enough for strict, multi-constraint work, so it turns generation and verification into separate jobs.
+创建者与审查者之间需要存在张力。审查者不是在同一草稿上进行润色的另一名写作者；它是约束检查者，负责寻找创建者未能察觉的问题。该架构承认，对于严格且包含多项约束的工作，一次模型调用通常不够，因此它将生成和验证转化为不同的工作。
 
-## Why File-Based Context
+## 为什么使用基于文件的上下文
 
-Passing context by conversation is lossy. When the main Agent explains history to a SubAgent, it must choose what to include, what to omit, and how to phrase it. That summary can drop constraints, blur terminology, translate user language, or accidentally turn uncertain context into a confident instruction.
+通过对话传递上下文会造成信息损失。当主 Agent 向 SubAgent 解释历史时，它必须选择包含哪些内容、省略哪些内容以及如何措辞。这份摘要可能丢失约束、模糊术语、翻译用户语言，或者意外地将不确定的上下文变成确定的指令。
 
-Passing context by file keeps the original material available. The main Agent exports the conversation history to a snapshot file and gives the SubAgent the path. The SubAgent can then inspect the file like any other source: search for the user's exact words, read nearby turns, compare old and new constraints, and decide what matters for its role.
+通过文件传递上下文可以保留原始材料。主 Agent 将对话历史导出到快照文件，并把路径交给 SubAgent。SubAgent 随后可以像检查任何其他来源一样检查该文件：搜索用户的原话、读取相邻轮次、比较新旧约束，并判断哪些内容与自身角色相关。
 
-This keeps the main Agent from spending its own context window on repeated retellings or failed intermediate attempts. The SubAgent may spend context to explore the file, try approaches, discover problems, and repair the work, but only its final artifact path, review result, or short repair notes return to the coordinator. This is the core meaning of `clean-agent`: clean the main Agent context by keeping noisy work outside it.
+这样可以防止主 Agent 将自己的上下文窗口耗费在重复转述或失败的中间尝试上。SubAgent 可以消耗上下文来探索文件、尝试方法、发现问题和修复工作，但最终只有其工件路径、审查结果或简短修复说明会返回协调者。这就是 `clean-agent` 的核心含义：将嘈杂的工作留在主 Agent 上下文之外，从而保持其整洁。
 
-## Core Pattern
+## 核心模式
 
-- One shared specification drives both creation and review.
-- The creator writes files and returns only paths.
-- The reviewer only reads and returns PASS / RETRY / FAILED with short audit notes.
-- RETRY stays inside the AI repair loop.
-- FAILED escalates to human decision.
-- PASS is the first point where the artifact is worth human review.
+- 一份共享规范同时驱动创建和审查。
+- 创建者写入文件，并且只返回路径。
+- 审查者只读，并返回 PASS / RETRY / FAILED 及简短审查说明。
+- RETRY 留在 AI 修复循环内部。
+- FAILED 升级给人类决策。
+- PASS 是工件首次值得人工审查的节点。
 
-## Installation
+## 安装
 
 ```bash
 npx skills add zccz14/clean-agent
 ```
 
-To inspect the package before installing:
+若要在安装前检查软件包：
 
 ```bash
 npx skills add zccz14/clean-agent --list
 ```
 
-## Repository Structure
+## 仓库结构
 
 ```text
 clean-agent/
@@ -80,28 +80,28 @@ clean-agent/
     └── dump_messages_codex.test.js
 ```
 
-## Usage
+## 用法
 
-Ask the main Agent to coordinate a clean-agent loop, or assign a SubAgent one of the explicit modes from the skill:
+让主 Agent 协调一个 clean-agent 循环，或者为 SubAgent 指派本技能所规定的某一种显式模式：
 
-- `creation mode`: generate or repair an artifact, write it to files, return only paths.
-- `review mode`: read the shared specification and artifact files, then return PASS / RETRY / FAILED.
-- `coordination mode`: main Agent only; dispatch creator and reviewer SubAgents, route retries, and escalate only PASS or FAILED states.
+- 创建模式（`creation mode`）：生成或修复工件，将其写入文件，并且只返回路径。
+- 审查模式（`review mode`）：读取共享规范和工件文件，然后返回 PASS / RETRY / FAILED。
+- 协调模式（`coordination mode`）：仅限主 Agent；派发创建者和审查者 SubAgent、传递重试，并且只升级 PASS 或 FAILED 状态。
 
-The most important habit is to pass shared specification references, not long pasted specifications, to both creator and reviewer. Examples include a skill name, file path, section heading, issue, design doc, conversation history snapshot, or concise user constraints from the current request. Preserve the user's original language, terminology, names, and quoted constraints when passing instructions to SubAgents; do not translate everything into English just to normalize the prompt.
+最重要的习惯是向创建者和审查者传递共享规范引用，而不是粘贴冗长的规范。例如，可以传递技能名、文件路径、章节标题、议题、设计文档、对话历史快照，或来自当前请求的简洁用户约束。向 SubAgent 传递指令时，请保留用户的原始语言、术语、名称和带引号的约束；不要为了统一提示词而将所有内容翻译成英语。
 
-For Codex, the main Agent can copy the raw persisted rollout JSONL to a private point-in-time snapshot before dispatching SubAgents:
+对于 Codex，主 Agent 可以在派发 SubAgent 之前，将原始持久化 rollout JSONL 复制到一个私有的时点快照：
 
 ```bash
 node scripts/dump_messages_codex.js --out /tmp/clean-agent-messages.jsonl
 ```
 
-Use `--session THREAD_ID` unless the desired task is the uniquely latest persisted rollout. The file is copied byte for byte without parsing, filtering, redaction, or reserialization. An active rollout snapshot contains only events persisted when copying starts; later events are not included. Treat the snapshot as sensitive and delete it after use.
+除非所需任务是唯一最新的持久化 rollout，否则请使用 `--session THREAD_ID`。文件会逐字节复制，不经过解析、过滤、脱敏或重新序列化。活跃 rollout 的快照只包含复制开始时已持久化的事件；之后的事件不包括在内。请将快照视为敏感内容，并在使用后删除。
 
-For OpenCode, export the current conversation history:
+对于 OpenCode，请导出当前对话历史：
 
 ```bash
 node scripts/dump_messages_opencode.js --out /tmp/clean-agent-messages.json
 ```
 
-Pass the printed path to the creator and reviewer as `Conversation history snapshot`. SubAgents should read that file directly instead of relying on the main Agent to retell the full conversation.
+将输出的路径作为 `Conversation history snapshot` 传给创建者和审查者。SubAgent 应直接读取该文件，而不是依赖主 Agent 转述完整对话。

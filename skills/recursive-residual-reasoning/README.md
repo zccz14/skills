@@ -1,116 +1,116 @@
-# Recursive Residual Reasoning
+# 递归残差推理
 
-Recursive Residual Reasoning, abbreviated as R3, is a domain-neutral reasoning paradigm for situations where the current explanation space is incomplete.
+递归残差推理（Recursive Residual Reasoning，简称 R3）是一种领域无关的推理范式，适用于当前解释空间不完整的情形。
 
-It treats the unexplained remainder of a reasoning process as an explicit residual. That residual is not a failure state. It becomes the object and generator of the next reasoning space.
+它把推理过程中尚未解释的剩余部分视为显式残差。该残差并非失败状态，而会成为下一个推理空间的对象和生成器。
 
 ```text
-Reasoning does not stop at the unknown.
-The residual generates the next reasoning space.
+推理不会止步于未知。
+残差会生成下一个推理空间。
 ```
 
-## Install
+## 安装
 
-Install the Agent Skill with:
+使用以下命令安装 Agent Skill：
 
 ```bash
 npx skills add zccz14/R3
 ```
 
-List available skills in the repository with:
+使用以下命令列出仓库中的可用技能：
 
 ```bash
 npx skills add zccz14/R3 --list
 ```
 
-## What R3 Is
+## R3 是什么
 
-R3 is a reasoning method for preserving and expanding the part of a problem that is not explained by the current model.
+R3 是一种推理方法，用于保留并扩展当前模型尚未解释的问题部分。
 
-It is useful for:
+它适用于：
 
-- ambiguous diagnoses
-- unexplained observations
-- failed hypotheses
-- complex systems
-- emergent behavior
-- investigation planning
-- theory revision
-- agent reasoning traces
+- 模糊诊断
+- 无法解释的观测
+- 失败的假设
+- 复杂系统
+- 涌现行为
+- 调查规划
+- 理论修正
+- Agent 推理轨迹
 
-R3 is intentionally not tied to any domain. It does not assume any specific field, artifact type, data source, or operational environment.
+R3 有意不与任何领域绑定。它不预设任何特定学科、产物类型、数据源或运行环境。
 
-## Documentation
+## 文档
 
-- [R3 method](./docs/r3.md): the domain-neutral principles and algorithm.
-- [R3 data file](./docs/r3-data-file.md): how a project records its R3 algebra nodes and relations.
-- [Template](./templates/r3.system.yaml): a starter data file for a project.
+- [R3 方法](./docs/r3.md)：领域无关的原则与算法。
+- [R3 数据文件](./docs/r3-data-file.md)：项目如何记录其 R3 代数节点与关系。
+- [模板](./templates/r3.system.yaml)：项目的起始数据文件。
 
-## Minimal Formal Model
+## 最小形式化模型
 
-R3 can be described as:
+R3 可描述为：
 
 ```text
 R3 = (U, Ω, X, τ, T)
 ```
 
-Where:
+其中：
 
-- `U` is the universe of reasoning objects: observations, hypotheses, evidence, nodes, conclusions, actions, stop reasons, and traces.
-- `Ω` is the family of closed operations over `U`, such as classify, explain, decompose, combine, test, expand, close, and trace.
-- `X` is the set of residual elements: explicit parts not explained by the current reasoning space.
-- `τ` is the residual expansion operator: it maps a residual into a new reasoning space.
-- `T` is the terminal set: conclusions, actions, formal closures, or bounded stop reasons.
+- `U` 是推理对象的全集：观测、假设、证据、节点、结论、行动、停止原因和轨迹。
+- `Ω` 是 `U` 上的闭合运算族，例如分类、解释、分解、组合、检验、扩展、闭合和追踪。
+- `X` 是残差元素集合：当前推理空间尚未解释的显式部分。
+- `τ` 是残差扩展算子：它将残差映射到新的推理空间。
+- `T` 是终止集合：结论、行动、形式化闭合或有界停止原因。
 
-The core transformation is:
-
-```text
-unknown → residual → next reasoning space
-```
-
-## Method
-
-1. State the observation in neutral terms.
-2. Define the current reasoning space.
-3. Identify what the current space explains.
-4. Name the residual explicitly.
-5. Route the residual to a next space, such as missing evidence, missing model, interaction, timing, boundary, sample, or cost.
-6. Expand the residual into a new reasoning space.
-7. Close with a conclusion, action, formal closure, or bounded stop reason.
-
-## Emergent Behavior
-
-R3 treats emergent behavior as a first-class reasoning case.
-
-If two parts are individually normal but jointly produce a phenomenon:
+核心转换为：
 
 ```text
-P(A) = not observed
-P(B) = not observed
-P(A, B) = observed
+未知 → 残差 → 下一个推理空间
 ```
 
-Then the unexplained part should be routed to an interaction residual, not forced into `A` or `B` alone.
+## 方法
+
+1. 用中性措辞陈述观测。
+2. 定义当前推理空间。
+3. 识别当前空间能够解释的内容。
+4. 明确命名残差。
+5. 将残差路由到下一个空间，例如缺失证据、缺失模型、交互、时序、边界、样本或成本。
+6. 将残差扩展为新的推理空间。
+7. 以结论、行动、形式化闭合或有界停止原因收尾。
+
+## 涌现行为
+
+R3 将涌现行为视为一类一等推理情形。
+
+如果两个部分各自正常，但组合后却产生某种现象：
 
 ```text
-emergent phenomenon
-→ interaction residual
-→ timing, ordering, coupling, feedback, shared state, threshold, or context dependency
-→ next reasoning space
+P(A) = 未观测到
+P(B) = 未观测到
+P(A, B) = 已观测到
 ```
 
-## Agent Skill
+那么，应将未解释的部分路由到交互残差，而不是强行归因于 `A` 或 `B` 中的任一方。
 
-This repository exposes a root-level `SKILL.md`, so skill managers can install it directly from the GitHub repository.
+```text
+涌现现象
+→ 交互残差
+→ 时序、顺序、耦合、反馈、共享状态、阈值或上下文依赖
+→ 下一个推理空间
+```
 
-The skill name is:
+## 智能体技能
+
+此仓库提供根目录级别的 `SKILL.md`，因此技能管理器可以直接从 GitHub 仓库安装它。
+
+技能名称为：
 
 ```text
 recursive-residual-reasoning
 ```
 
-When used inside a project, the skill asks the agent to maintain a project-level R3 data file, preferably `r3.system.yaml`, that records nodes, residuals, interaction spaces, expansion relations, closure rules, and trace requirements.
+在项目内使用时，该技能要求 Agent 维护项目级 R3 数据文件，首选 `r3.system.yaml`，用于记录节点、残差、交互空间、扩展关系、闭合规则和轨迹要求。
 
-## License
+## 许可证
 
 MIT

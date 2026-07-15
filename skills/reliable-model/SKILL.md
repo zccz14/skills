@@ -1,262 +1,219 @@
 ---
 name: reliable-model
 description: >-
-  Use this skill when creating, modifying, explaining, diagnosing, or
-  validating a model, rule, scoring system, prediction, parameter choice,
-  mechanism hypothesis, or research conclusion. It evaluates reliability by
-  requiring both prior rationale and empirical validation, and by separating
-  reliable conclusions from black-box correlations, empty stories, post-hoc
-  leads, and unreliable claims.
+  当创建、修改、解释、诊断或验证模型、规则、评分系统、预测、参数选择、机制假设或研究结论时，请使用此技能。它要求同时具备先验依据与实证验证来评估可靠性，并区分可靠结论与黑箱相关性、空洞叙事、事后线索及不可靠主张。
 ---
 
-# Reliable Model
+# 可靠模型
 
-Use this skill to judge whether a model claim comes from a reliable process.
-Here, reliability means epistemic reliability: the conclusion is more likely to
-hold beyond the observations that produced it.
+使用此技能判断一项模型主张是否源自可靠的过程。这里的可靠性是指认知可靠性：结论更有可能在产生它的观测之外仍然成立。
 
-Core rule:
+核心规则：
 
 ```text
-Reliable model = prior rationale + empirical validation
+可靠模型 = 先验依据 + 实证验证
 ```
 
-Short version:
+简要表述：
 
 ```text
-Explanation prevents black boxes.
-Validation prevents empty stories.
+解释防止黑箱。
+验证防止空洞叙事。
 ```
 
-## When To Use
+## 何时使用
 
-Use this skill for tasks involving:
+将此技能用于涉及以下内容的任务：
 
-- Creating or changing a model, rule, scoring function, filter, ranking system,
-  policy, threshold, weighting scheme, parameter structure, or prediction rule.
-- Explaining a phenomenon, experiment result, metric change, segment behavior,
-  feature effect, failure case, or unexplained residual.
-- Deciding whether a model, rule, parameter choice, mechanism explanation, or
-  research conclusion is reliable.
-- Turning a post-hoc observation into a candidate model or testable hypothesis.
-- Reviewing whether an apparently successful result may be black-box
-  correlation, selective reporting, sample-specific luck, leakage, or a story
-  invented after seeing the result.
+- 创建或更改模型、规则、评分函数、筛选器、排序系统、策略、阈值、加权方案、参数结构或预测规则。
+- 解释现象、实验结果、指标变化、细分群体行为、特征效应、失败案例或无法解释的残差。
+- 判断模型、规则、参数选择、机制解释或研究结论是否可靠。
+- 将事后观测转化为候选模型或可检验假设。
+- 审查表面成功的结果是否可能来自黑箱相关性、选择性报告、样本特有的运气、泄漏，或在看到结果后编造的故事。
 
-## Workflow
+## 工作流程
 
-Work in this order:
+按以下顺序工作：
 
 ```text
-Observation or goal
--> Prior rationale
--> Model or explanation design
--> Empirical validation
--> Two-leg reliability judgment
--> Conclusion level and residual risk
+观测或目标
+-> 先验依据
+-> 模型或解释设计
+-> 实证验证
+-> 双支柱可靠性判断
+-> 结论等级与残余风险
 ```
 
-Do not inspect outcomes, metrics, or local improvements first and then invent a
-natural-sounding explanation. If the result has already been seen, label the
-explanation as post-hoc and lower the conclusion level until it receives either
-strong independent rationale or independent validation.
+不要先查看结果、指标或局部改进，再编造一个听起来自然的解释。如果已经看过结果，应将该解释标记为事后解释，并降低结论等级，直到它获得有力的独立依据或独立验证。
 
-## Leg 1: Prior Rationale
+## 支柱 1：先验依据
 
-Prior rationale answers:
+先验依据回答：
 
 ```text
-Why should this model make sense before seeing the result?
+在看到结果之前，为什么这个模型应当合理？
 ```
 
-When creating, changing, or explaining a model, state:
+创建、更改或解释模型时，应陈述：
 
-- Why the variables or inputs are meaningful.
-- Why the rule or structure fits the system that generates the outcome.
-- Why the parameters, thresholds, dates, windows, weights, sample boundaries, or
-  segment definitions are not arbitrary result-driven choices.
-- What domain mechanism, causal theory, behavioral pattern, operational
-  constraint, engineering property, or external fact supports the design.
-- Whether the same explanation would have been plausible before seeing the full
-  result.
+- 为什么这些变量或输入有意义。
+- 为什么该规则或结构符合生成结果的系统。
+- 为什么参数、阈值、日期、窗口、权重、样本边界或细分群体定义不是由结果驱动的任意选择。
+- 哪种领域机制、因果理论、行为模式、运行约束、工程属性或外部事实支持该设计。
+- 在看到完整结果之前，同一解释是否也会显得合理。
 
-If the only reason is "the result improved," the idea is not yet a reliable
-model. Treat it as a post-hoc lead.
+如果唯一理由是“结果有所改善”，那么这个想法还不能算作可靠模型。应将其视为事后线索。
 
-## Leg 2: Empirical Validation
+## 支柱 2：实证验证
 
-Empirical validation answers:
+实证验证回答：
 
 ```text
-Does the model actually work under tests that could have disproved it?
+该模型在可能推翻它的检验中是否确实有效？
 ```
 
-Do not rely on one favorable result. Check, as relevant:
+不要依赖单个有利结果。根据具体情况检查：
 
-- Out-of-sample data, holdout groups, or periods not used for selection.
-- Stability across time windows, segments, cohorts, contexts, or operating
-  regimes.
-- Baseline comparisons and ablations that show what the model adds.
-- Sensitivity to parameter changes, sample boundaries, and preprocessing
-  choices.
-- Failure cases, tail risks, boundary conditions, and counterexamples.
-- Uncertainty, noise, cost, feasibility, and operational constraints.
-- Selection bias, selective reporting, leakage, or explanations created after
-  seeing the result.
+- 未用于选择的样本外数据、留出组或留出时段。
+- 在不同时间窗口、细分群体、队列、上下文或运行机制下的稳定性。
+- 能够说明模型增量价值的基线比较和消融实验。
+- 对参数变化、样本边界和预处理选择的敏感度。
+- 失败案例、尾部风险、边界条件和反例。
+- 不确定性、噪声、成本、可行性和运行约束。
+- 选择偏差、选择性报告、泄漏，或看到结果后才提出的解释。
 
-Strong validation must be falsifiable: state what evidence would weaken or
-reject the model, what failures must be disclosed, and when the model should be
-downgraded or re-estimated.
+有力的验证必须可证伪：说明哪些证据会削弱或否定模型、哪些失败必须披露，以及何时应下调模型等级或重新估计模型。
 
-## Reliability Matrix
+## 可靠性矩阵
 
-Judge both legs separately.
+分别判断两个支柱。
 
-| State | Prior rationale | Empirical validation | Judgment |
+| 状态 | 先验依据 | 实证验证 | 判断 |
 | --- | --- | --- | --- |
-| Black-box model | Weak | Strong | The result may be useful, but the mechanism is unclear. Do not call it reliable yet. |
-| Empty-story model | Strong | Weak | The explanation is plausible, but evidence is insufficient. Treat it as a hypothesis. |
-| Low-reliability model | Weak | Weak | Neither mechanism nor evidence is strong. Do not advance the claim. |
-| Reliable model | Strong | Strong | The model makes sense in advance and holds up empirically. |
+| 黑箱模型 | 弱 | 强 | 结果可能有用，但机制尚不明确。暂时不要称其为可靠模型。 |
+| 空洞叙事模型 | 强 | 弱 | 解释合理，但证据不足。应将其视为假设。 |
+| 低可靠性模型 | 弱 | 弱 | 机制和证据都不充分。不要推进该主张。 |
+| 可靠模型 | 强 | 强 | 模型事先看来合理，并经受住了实证检验。 |
 
-Never use empirical success as a substitute for prior rationale. Never use a
-plausible story as a substitute for validation.
+绝不要用实证成功替代先验依据。也绝不要用听起来合理的故事替代验证。
 
-## Output Pattern: Create Or Modify A Model
+## 输出模式：创建或修改模型
 
-Use this structure when the user asks to create or change a model:
-
-```text
-1. Goal or phenomenon
-2. Prior rationale
-   - Mechanism hypothesis
-   - Input, structure, rule, and parameter sources
-   - Information available at decision time
-3. Model design
-   - Rule or model behavior
-   - Scope and boundaries
-   - Expected improvements and possible regressions
-4. Empirical validation plan
-   - Out-of-sample or independent validation
-   - Segment, time-window, or context stability checks
-   - Metrics, baselines, ablations, and failure-case review
-5. Reliability gate
-   - Is the prior leg strong enough?
-   - Is the validation leg strong enough?
-   - Are leakage or selection bias risks controlled or disclosed?
-6. Conclusion level
-```
-
-If the task requires code changes, still identify the prior rationale and
-validation plan before implementing. Do not encode post-hoc choices as if they
-were fixed design principles.
-
-## Output Pattern: Explain A Phenomenon
-
-Separate explanations into three types:
+当用户要求创建或更改模型时，使用以下结构：
 
 ```text
-Known mechanism: supported before seeing this result.
-Post-hoc candidate: proposed after seeing this result; useful but unproven.
-Residual: not explained by the current explanation space.
+1. 目标或现象
+2. 先验依据
+   - 机制假设
+   - 输入、结构、规则和参数的来源
+   - 决策时可用的信息
+3. 模型设计
+   - 规则或模型行为
+   - 范围与边界
+   - 预期改进与可能的退化
+4. 实证验证计划
+   - 样本外或独立验证
+   - 细分群体、时间窗口或上下文稳定性检查
+   - 指标、基线、消融和失败案例审查
+5. 可靠性关卡
+   - 先验支柱是否足够有力？
+   - 验证支柱是否足够有力？
+   - 泄漏或选择偏差风险是否已受控或已披露？
+6. 结论等级
 ```
 
-Then report:
+如果任务需要修改代码，也应在实现之前识别先验依据和验证计划。不要把事后选择编码成仿佛一开始就确定的设计原则。
+
+## 输出模式：解释现象
+
+将解释分为三类：
 
 ```text
-1. Observed phenomenon
-2. Available prior mechanisms
-3. Candidate explanations and falsifiable predictions
-4. Supporting and contrary evidence
-5. Unexplained residuals
-6. Next validation steps
+已知机制：在看到此结果之前已有支持。
+事后候选解释：在看到此结果后提出；有用但尚未证实。
+残差：当前解释空间尚未解释的部分。
 ```
 
-Do not present every explanation as a settled cause. Label post-hoc reasoning
-explicitly.
+然后报告：
 
-## Reliability Checklist
+```text
+1. 观测到的现象
+2. 可用的先验机制
+3. 候选解释与可证伪预测
+4. 支持性证据与反面证据
+5. 尚未解释的残差
+6. 后续验证步骤
+```
 
-Prior leg:
+不要把每项解释都当作已确定的原因。应明确标记事后推理。
 
-- Why should this variable, rule, structure, or parameter make sense before
-  seeing the result?
-- Where did the threshold, date, weight, window, sample boundary, or segment
-  definition come from?
-- Is the rationale grounded in mechanism, theory, operational constraints,
-  pre-defined assumptions, or external facts?
-- If the choice came from looking at results, is it labeled as post-hoc?
-- Does the explanation create falsifiable predictions?
+## 可靠性检查清单
 
-Validation leg:
+先验支柱：
 
-- Was the model tested on data, periods, groups, or contexts not used to choose
-  it?
-- Is performance stable across important slices rather than only in a selected
-  slice?
-- Do baselines, ablations, and sensitivity checks support the claimed effect?
-- Are uncertainty, noise, cost, feasibility, and operational constraints
-  considered?
-- Are failure cases, tail risks, and counterexamples disclosed?
+- 在看到结果之前，为什么这个变量、规则、结构或参数应当合理？
+- 阈值、日期、权重、窗口、样本边界或细分群体定义从何而来？
+- 依据是否建立在机制、理论、运行约束、预定义假设或外部事实之上？
+- 如果该选择源于查看结果，是否已标记为事后选择？
+- 该解释是否会产生可证伪的预测？
 
-Research process:
+验证支柱：
 
-- Is there leakage from the target, future information, unavailable data, or
-  evaluation labels into the model design?
-- Is there selection bias from choosing features, parameters, windows, samples,
-  or explanations after seeing results?
-- Does the conclusion confuse "can be executed" with "was selected by a reliable
-  process"?
-- Are unresolved residuals and downgrade conditions stated?
+- 模型是否在未用于选择它的数据、时段、群体或上下文上经过检验？
+- 性能是否在重要切片上保持稳定，而不只是在选定切片上表现良好？
+- 基线、消融和敏感度检查是否支持所声称的效应？
+- 是否考虑了不确定性、噪声、成本、可行性和运行约束？
+- 是否披露了失败案例、尾部风险和反例？
 
-## Conclusion Levels
+研究过程：
 
-Use explicit conclusion levels:
+- 模型设计是否泄漏了目标、未来信息、不可用数据或评估标签？
+- 是否因在看到结果后才选择特征、参数、窗口、样本或解释而产生选择偏差？
+- 结论是否混淆了“可在决策时执行”和“由可靠过程选出”？
+- 是否陈述了未解决的残差和降级条件？
 
-| Level | Condition | Allowed wording |
+## 结论等级
+
+使用明确的结论等级：
+
+| 等级 | 条件 | 允许的表述 |
 | --- | --- | --- |
-| Reliable model | Strong prior rationale, strong validation, no uncontrolled leakage | Mechanistically plausible and empirically confirmed within stated bounds. |
-| Candidate model | One leg is strong and the other is incomplete but testable | Promising, but needs more rationale or independent validation. |
-| Post-hoc lead | Mainly discovered after seeing results | Useful diagnostic signal; not reliable by itself. |
-| Hypothesis | Strong explanation but insufficient data | Plausible mechanism awaiting empirical confirmation. |
-| Unreliable model | Both legs are weak, or leakage invalidates the evidence | Do not advance the claim without redesign. |
+| 可靠模型 | 先验依据充分、验证有力且没有未受控的泄漏 | 在所述边界内，机制合理性与实证结果均已得到确认。 |
+| 候选模型 | 一个支柱有力，另一个尚不完整但可检验 | 很有前景，但仍需更多依据或独立验证。 |
+| 事后线索 | 主要在看到结果后发现 | 有用的诊断信号；单凭这一点并不可靠。 |
+| 假设 | 解释有力但数据不足 | 合理的机制，等待实证确认。 |
+| 不可靠模型 | 两个支柱都薄弱，或泄漏使证据失效 | 在重新设计之前，不要推进该主张。 |
 
-## Recommended Wording
+## 推荐措辞
 
-Acceptable:
-
-```text
-This rule has a clear prior mechanism and empirical validation provides
-confirming evidence. Remaining risks are selection bias, boundary conditions,
-and failure cases outside the tested scope.
-```
-
-Acceptable:
+可接受：
 
 ```text
-This is a positive post-hoc lead. It suggests a possible mechanism, but it is
-not a reliable model until supported by stronger prior rationale or independent
-validation.
+此规则有明确的先验机制，实证验证也提供了确认性证据。剩余风险包括选择偏差、边界条件以及已测试范围之外的失败案例。
 ```
 
-Avoid:
+可接受：
 
 ```text
-The metric improved, so the model is reliable.
+这是一个积极的事后线索。它提示了一种可能的机制，但在获得更有力的先验依据或独立验证之前，还不能算作可靠模型。
 ```
 
-Avoid:
+避免：
 
 ```text
-The explanation sounds plausible, so no validation is needed.
+指标有所改善，因此模型是可靠的。
 ```
 
-Avoid:
+避免：
 
 ```text
-The model can be executed at decision time, so the research process is unbiased.
+这个解释听起来合理，因此不需要验证。
 ```
 
-The goal is not to make explanations prettier or metrics better. The goal is to
-make model conclusions explainable, testable, reproducible, and honest about
-their failure boundaries.
+避免：
+
+```text
+该模型可以在决策时执行，因此研究过程不存在偏差。
+```
+
+目标不是让解释更漂亮，也不是让指标更好。目标是使模型结论可解释、可检验、可复现，并如实说明其失效边界。

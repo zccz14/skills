@@ -1,27 +1,27 @@
 # faster-code
 
-`faster-code` is a general-purpose agent skill for handling slow, compute-heavy programs without wasting long full-scale runs.
+`faster-code` 是一项通用智能体技能，用于处理缓慢、计算密集型程序，避免浪费时间进行长时间的全规模运行。
 
-It teaches an agent to:
+它会教智能体：
 
-- probe runtime progressively with bounded timeouts;
-- add online `N-T` progress instrumentation before sliced probes when a natural work counter exists;
-- collect 3-5 `N-T` samples before extrapolating;
-- estimate whether the target scale is likely to finish within budget;
-- stop early when the estimate is unacceptable;
-- prioritize removing wasted work before using more compute to reduce wall-clock time;
-- use existing profilers only after the go/no-go gate fails;
-- preserve slow-version canonical output before replacing it with optimized code.
+- 使用有界超时逐步探测运行时间；
+- 存在自然工作计数器时，在切片探测前加入在线 `N-T` 进度插桩；
+- 在外推前收集 3–5 个 `N-T` 样本；
+- 估算目标规模是否可能在预算内完成；
+- 当估算结果不可接受时及早停止；
+- 在投入更多算力缩短实际运行时间前，优先消除无效工作；
+- 只有在全规模运行可行性关卡未通过后，才使用现有性能分析器；
+- 在用优化代码替换慢速版本前，保留慢速版本的规范输出。
 
-The skill is intentionally domain-neutral. It does not assume any specific field, framework, dataset, or workload type.
+本技能有意保持领域中立。它不假设任何特定领域、框架、数据集或工作负载类型。
 
-## Contents
+## 内容
 
 ```text
 README.md
 SKILL.md
 ```
 
-## Scope
+## 范围
 
-This skill does not bundle profiler tools and does not provide generic optimization recipes. Its job is to prevent blind full-scale execution and to protect semantic correctness when code is made faster.
+本技能不封装性能分析工具，也不提供通用优化方案。它的职责是防止盲目执行全规模运行，并在代码加速时保护语义正确性。

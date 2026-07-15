@@ -1,37 +1,37 @@
 # clean-code
 
-Clean Code skills for agent-assisted programming.
+面向智能体辅助编程的 Clean Code 技能。
 
-This repository provides a lightweight skill package that helps coding agents keep changes focused, readable, and maintainable. It is intended for day-to-day software work where the agent should favor small correct edits, clear reasoning, and practical engineering tradeoffs.
+本仓库提供一个轻量级技能包，帮助编程智能体让改动保持聚焦、易读且便于维护。它适用于日常软件开发，要求智能体优先选择小而正确的改动、清晰的推理和务实的工程权衡。
 
-## What It Helps With
+## 它能提供哪些帮助
 
-- Writing code that is easier to read, review, and change.
-- Keeping implementations small instead of adding unnecessary abstraction.
-- Improving naming, structure, and error handling.
-- Reviewing code with attention to bugs, regressions, and missing tests.
-- Communicating changes clearly while collaborating in an existing codebase.
+- 编写更易阅读、审查和修改的代码。
+- 保持实现精简，避免增加不必要的抽象。
+- 改善命名、结构和错误处理。
+- 审查代码时关注缺陷、回归和缺失的测试。
+- 在现有代码库中协作时清晰说明改动。
 
-## Why It Matters
+## 为什么它很重要
 
-- **Complexity grows exponentially** with each additional branch or decision point, making code harder to understand, test, and maintain. AI / Human teams both struggle when there are too many paths to hold in attention.
-- **AI agents are not yet good at managing complexity**, so they need to be guided to avoid adding unnecessary paths and to keep the main path clear.
+- 每增加一个分支或决策点，**复杂度都会呈指数增长**，使代码更难理解、测试和维护。需要同时关注的路径过多时，AI / 人类团队都会感到吃力。
+- **AI 智能体尚不擅长管理复杂度**，因此需要引导它们避免增加不必要的路径，并让主路径保持清晰。
 
-## Install
+## 安装
 
 ```sh
 npx skills add zccz14/clean-code
-npx skills update # to get the latest version
+npx skills update # 获取最新版本
 ```
 
-## Guiding Principles
+## 指导原则
 
-1. **Complexity is the number of paths**: Every branch multiplies the paths that must be understood, tested, and proven to match the intended business semantics. Do not add a branch unless its necessity is explicit.
-2. **Compatibility is debt**: Avoid adding code that is only compatible with existing systems or conventions without a clear business reason, as it increases complexity without providing value. Don't compatible-ize unless necessary for a specific business need.
-3. **Minimal Error Handling**: Catch only errors the code knows how to handle, and keep error recovery separate from ordinary business flow. Avoid adding error handling that hides unknown states or swallows errors without a clear recovery strategy. Don't log or catch errors everywhere.
-4. **Divide and Conquer**: When you need to solve a problem with multiple items, consider whether to solve it with a single path that iterates over the items, or with multiple paths that each handle one item. Don't add paths for each item unless there is a clear business reason to treat them separately.
-5. **Linear Flow First**: Prefer a straight-line process inside each function. If the process requires category-by-category discussion, extract that classification into a more specific function where each case can be handled linearly.
+1. **复杂度就是路径数量**：每个分支都会使需要理解、测试并证明符合预期业务语义的路径成倍增加。除非明确需要，否则不要增加分支。
+2. **兼容性就是债务**：如果没有明确的业务理由，应避免加入仅为兼容现有系统或惯例的代码，因为这会增加复杂度，却不产生价值。除非特定业务确有需要，否则不要进行兼容性改造。
+3. **最少错误处理**：只捕获代码知道如何处理的错误，并将错误恢复与常规业务流程分开。避免加入会掩盖未知状态的错误处理，也不要在没有明确恢复策略的情况下吞掉错误。不要到处记录或捕获错误。
+4. **分而治之**：需要解决包含多个元素的问题时，应考虑是用一条路径遍历这些元素，还是用多条路径分别处理各个元素。除非有明确的业务理由需要区别对待，否则不要为每个元素增加单独路径。
+5. **线性流程优先**：每个函数内部应优先采用直线式流程。如果流程需要逐类别讨论，应将分类逻辑提取到更具体的函数中，以便在其中线性处理每种情况。
 
-## License
+## 许可证
 
 MIT

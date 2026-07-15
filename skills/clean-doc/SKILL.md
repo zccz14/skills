@@ -1,213 +1,213 @@
 ---
 name: clean-doc
-description: Use this skill whenever the user asks to write, rewrite, shorten, clarify, review, polish, restructure, or adapt documentation or any human-facing explanatory text. For any task that creates or modifies a document, also use clean-agent coordination mode so creator and reviewer SubAgents apply clean-doc as their shared communication specification. It turns information into purpose-driven communication for a specific audience and decision context, prioritizes the reader's language and style, and preserves only decision-relevant information.
+description: 每当用户要求编写、重写、缩短、澄清、审查、润色、重构或改写文档及任何面向人类的说明性文本时，请使用本技能。对于任何创建或修改文档的任务，还要使用 clean-agent 协调模式，使创建者和审查者 SubAgent 将 clean-doc 作为共同的沟通规范。它把信息转化为针对特定受众和决策情境的目标导向型沟通，优先考虑读者的语言和风格，并且只保留与决策相关的信息。
 ---
 
-# Clean Doc
+# Clean Doc（整洁文档）
 
-Clean Doc helps transform text into efficient communication for a specific reader, situation, and intended effect. The goal is not to preserve all available information. The goal is to help the reader understand what matters, decide what to do, and act with the right level of confidence.
+Clean Doc 帮助将文本转化为针对特定读者、情境和预期效果的高效沟通。目标不是保留所有可用信息，而是帮助读者理解要点、决定如何行动，并以适当的信心采取行动。
 
-## Coordination Requirement
+## 协调要求
 
-For any task that creates or modifies a document or other human-facing text, require the main Agent to use `clean-agent` coordination mode. Keep `clean-doc` as the domain gate: pass it to both the creator and reviewer as the same shared specification. Let `clean-agent` own role separation, review, retries, and escalation; do not replace this skill's communication criteria with orchestration rules.
+对于任何创建或修改文档及其他面向人类文本的任务，要求主 Agent 使用 `clean-agent` 协调模式。将 `clean-doc` 保持为领域关卡：把它作为同一份共享规范传给创建者和审查者。让 `clean-agent` 负责角色分离、审查、重试和升级；不要用编排规则取代本技能的沟通标准。
 
-Treat the current role as already inside a `clean-agent` loop only when the task explicitly assigns `clean-agent` creation mode or review mode and provides the same shared specification sources plus the applicable artifact paths or review contract. Then perform that role directly without dispatching another SubAgent or starting a nested loop. Being a SubAgent, receiving a delegated task, or being asked to write a file does not qualify for this exemption.
+只有当任务明确指派 `clean-agent` 创建模式或审查模式，并提供相同的共享规范来源以及适用的工件路径或审查约定时，才将当前角色视为已经处于 `clean-agent` 循环中。此时直接执行该角色，不要派发其他 SubAgent，也不要启动嵌套循环。仅仅身为 SubAgent、收到委派任务或被要求编写文件，并不足以获得这项豁免。
 
-Apply `clean-doc` directly to a read-only explanation or critique only when the task does not create or modify an artifact.
+只有当任务不创建或修改工件时，才直接对只读说明或评论应用 `clean-doc`。
 
-## First Principles
+## 第一原则
 
-High-signal writing is relative to the reader and the job the document must do. Before writing or editing, identify:
+高信息密度的写作取决于读者以及文档必须完成的工作。编写或编辑之前，请确定：
 
 ```text
-Who is the reader?
-What situation are they in?
-What decision, action, or understanding should the document enable?
-What do they already know, and what do they need clarified?
-Which information would change their judgment or behavior?
+读者是谁？
+他们处于什么情境？
+文档应促成什么决策、行动或理解？
+他们已经知道什么，又需要澄清什么？
+哪些信息会改变他们的判断或行为？
 ```
 
-If the answer cannot be inferred from the prompt or surrounding context, ask one concise clarification question. If the context is clear enough, proceed with the most likely reader and purpose, and make that choice visible in the output.
+如果无法从提示词或周围上下文推断答案，请提出一个简洁的澄清问题。如果上下文足够清楚，请按最可能的读者和目的继续，并在输出中体现这一选择。
 
-## Language And Voice
+## 语言与表达风格
 
-Use the user's native language and habitual language style by default. This matters because purpose-driven writing is not only about information selection; it is also about making the message easy for the reader to receive, trust, and act on.
+默认使用用户的母语和惯用语言风格。这一点很重要，因为目标导向型写作不仅关乎信息选择，还要让读者容易接收、信任信息并据此行动。
 
-Follow these rules:
+遵循以下规则：
 
-- Write in the language the user uses, unless they request another language.
-- Match the user's level of formality, directness, and terminology.
-- Preserve important names, code symbols, product names, file paths, and quoted terms exactly when needed.
-- Explain unfamiliar terms only when they affect understanding or action.
-- Avoid promotional, emotional, evasive, or over-certain wording unless the user explicitly asks for that style.
-- Let the current context define domain conventions, tone, compliance needs, and audience expectations.
+- 使用用户所用的语言写作，除非他们要求使用其他语言。
+- 匹配用户的正式程度、直接程度和术语。
+- 必要时准确保留重要名称、代码符号、产品名、文件路径和引用术语。
+- 只有在陌生术语会影响理解或行动时才解释它们。
+- 避免宣传性、情绪化、回避性或过度确定的措辞，除非用户明确要求这种风格。
+- 让当前上下文定义领域惯例、语气、合规要求和受众期望。
 
-## Domain Independence
+## 领域独立性
 
-Do not assume a specific industry, workflow, research process, metric system, or organizational culture. This skill can support engineering docs, product specs, internal memos, public announcements, policies, onboarding material, postmortems, strategy notes, tutorials, proposals, reports, emails, and other human-facing text.
+不要假设特定行业、工作流、研究流程、指标体系或组织文化。本技能可支持工程文档、产品规范、内部备忘录、公开公告、政策、入门材料、事后分析、战略说明、教程、提案、报告、电子邮件及其他面向人类的文本。
 
-When the surrounding context defines a domain-specific writing scheme, adopt it. Context may define:
+当周围上下文定义了领域特定的写作方案时，请采用它。上下文可能定义：
 
-- Required sections or templates.
-- Terminology and definitions.
-- Evidence standards.
-- Tone and brand voice.
-- Compliance or legal constraints.
-- Audience expertise level.
-- Accepted formatting conventions.
+- 必需的章节或模板。
+- 术语和定义。
+- 证据标准。
+- 语气和品牌风格。
+- 合规或法律约束。
+- 受众的专业水平。
+- 接受的格式惯例。
 
-Context should specialize the writing plan; it should not override the core principle that the document exists to serve a reader's decision, action, or understanding.
+上下文应使写作计划具体化；但不应推翻一个核心原则：文档存在的目的是服务于读者的决策、行动或理解。
 
-## Workflow
+## 工作流
 
-1. Define the receiver.
-   Identify the reader, their situation, and what they need to do after reading.
+1. 定义接收者。
+   确定读者、他们的情境，以及他们读完后需要做什么。
 
-2. Define the communication task.
-   Decide whether the document should help the reader decide, execute, learn, audit, align, troubleshoot, remember, approve, or communicate onward.
+2. 定义沟通任务。
+   判断文档应帮助读者做决策、执行、学习、审计、达成一致、排查故障、记忆、批准，还是继续向他人传达。
 
-3. Select by consequence.
-   Keep information that changes reader judgment, action, risk awareness, or understanding boundaries. Compress or remove information that only makes the document feel complete.
+3. 按影响选择信息。
+   保留会改变读者判断、行动、风险认知或理解边界的信息。压缩或删除仅仅让文档显得完整的信息。
 
-4. Build the main path first.
-   Put the most useful conclusion, instruction, recommendation, or framing early. Then add evidence, constraints, exceptions, and next steps.
+4. 先构建主路径。
+   尽早给出最有用的结论、指令、建议或框架。然后补充证据、约束、例外和后续步骤。
 
-5. Separate certainty levels.
-   Distinguish facts, interpretations, assumptions, risks, unknowns, and recommendations. Do not present unresolved or weakly supported material as settled.
+5. 区分确定性层级。
+   区分事实、解释、假设、风险、未知事项和建议。不要把尚未解决或支持薄弱的材料表述为定论。
 
-6. Adapt the shape.
-   Choose the structure that best fits the task instead of mechanically applying a template.
+6. 调整形式。
+   选择最适合任务的结构，而不是机械套用模板。
 
-7. Tighten the surface.
-   Remove repetition, soften unnecessary jargon, shorten long explanations, and make action boundaries explicit.
+7. 精炼表述。
+   删除重复内容，弱化不必要的术语，缩短冗长解释，并明确行动边界。
 
-## Information Selection
+## 信息选择
 
-Use this table as a starting point, not as a fixed template.
+将此表作为起点，而不是固定模板。
 
-| Document purpose | Prioritize | Compress or remove |
+| 文档目的 | 优先保留 | 压缩或删除 |
 | --- | --- | --- |
-| Decision memo | Recommendation, options, tradeoffs, risks, decision criteria | Full history, low-impact context, rhetorical framing |
-| Execution guide | Steps, prerequisites, checks, stop conditions, examples | Long background, abstract motivation, duplicate warnings |
-| Design document | Problem, goals, constraints, approach, interfaces, tradeoffs, validation | Premature implementation detail, unrelated alternatives |
-| Review or critique | Main blockers, evidence, impact, concrete fixes | Generic praise, exhaustive restatement, vague opinions |
-| Onboarding material | Mental model, key concepts, first actions, common pitfalls | Rare edge cases, internal debates, excessive policy detail |
-| Incident or postmortem | Impact, timeline, causes, contributing factors, fixes, owners | Blame language, speculation without labels, irrelevant logs |
-| Public update | What changed, why it matters, who is affected, action required | Internal process detail, unsupported claims, needless caveats |
-| Proposal | Desired outcome, rationale, scope, cost, risks, ask | Overlong background, hidden assumptions, decorative language |
+| 决策备忘录 | 建议、选项、权衡、风险、决策标准 | 完整历史、影响较小的上下文、修辞性铺垫 |
+| 执行指南 | 步骤、前提条件、检查项、停止条件、示例 | 冗长背景、抽象动机、重复警告 |
+| 设计文档 | 问题、目标、约束、方法、接口、权衡、验证 | 过早的实现细节、无关的替代方案 |
+| 审查或评论 | 主要阻碍、证据、影响、具体修复措施 | 泛泛的赞美、详尽复述、模糊意见 |
+| 入门材料 | 心智模型、关键概念、初始行动、常见陷阱 | 罕见边界情况、内部争论、过多政策细节 |
+| 事故报告或事后分析 | 影响、时间线、原因、促成因素、修复措施、负责人 | 指责性语言、未加标注的推测、无关日志 |
+| 公开更新 | 变更内容、重要性、受影响对象、所需行动 | 内部流程细节、无依据的声明、不必要的保留意见 |
+| 提案 | 期望结果、理由、范围、成本、风险、请求 | 过长背景、隐藏假设、装饰性语言 |
 
-The same fact can be signal in one document and noise in another. Judge every section by whether it helps this reader in this situation.
+同一事实在一份文档中可能是有效信息，在另一份中则可能是噪声。判断每一节是否能帮助处于当前情境的这位读者。
 
-## Structure Patterns
+## 结构模式
 
-For decision-oriented writing, prefer:
-
-```text
-Recommendation
-Why It Matters
-Options Considered
-Tradeoffs
-Risks And Unknowns
-Decision Needed
-Next Steps
-```
-
-For execution-oriented writing, prefer:
+对于面向决策的写作，优先采用：
 
 ```text
-Goal
-Scope
-Prerequisites
-Steps
-Checks
-Stop Conditions
-Troubleshooting
-Next Steps
+建议
+为何重要
+已考虑的选项
+权衡
+风险与未知事项
+所需决策
+后续步骤
 ```
 
-For explanatory writing, prefer:
+对于面向执行的写作，优先采用：
 
 ```text
-Core Idea
-Why It Matters
-Key Concepts
-Example
-Common Mistakes
-How To Apply It
+目标
+范围
+前提条件
+步骤
+检查项
+停止条件
+故障排查
+后续步骤
 ```
 
-For review-oriented writing, prefer:
+对于说明性写作，优先采用：
 
 ```text
-Main Findings
-Impact
-Evidence
-Recommended Changes
-Open Questions
+核心理念
+为何重要
+关键概念
+示例
+常见错误
+如何应用
 ```
 
-Do not force these structures when the user asks for a specific format or when the document's purpose suggests a better shape.
-
-## Compression Rules
-
-When shortening or cleaning a document, apply these steps in order:
-
-1. Preserve the main path: what the reader needs to know or do.
-2. Merge repeated points.
-3. Remove information that does not change action, judgment, or understanding.
-4. Convert long explanations into criteria, rules, examples, or boundaries.
-5. Keep evidence only at the level needed for trust and action.
-6. Remove anecdotes unless they are the shortest path to understanding.
-7. Keep definitions only when the reader needs them.
-8. Prefer concrete verbs and direct sentence order.
-
-After compression, verify that the reader can still answer:
+对于面向审查的写作，优先采用：
 
 ```text
-What is the point?
-Why should I care?
-What should I do next?
-What evidence or constraints matter?
-Where are the limits or uncertainties?
+主要发现
+影响
+证据
+建议的变更
+开放问题
 ```
 
-## Review Mode
+当用户要求特定格式，或文档目的表明其他形式更合适时，不要强行套用这些结构。
 
-When reviewing an existing document, lead with the issues that most reduce communication effectiveness. Focus on:
+## 压缩规则
 
-- Unclear audience or purpose.
-- Missing or buried main point.
-- Background that overwhelms the decision-relevant message.
-- Mixed facts, assumptions, opinions, and recommendations.
-- Structure that reflects the writer's process instead of the reader's task.
-- Tone or language that does not fit the reader.
-- Excessive completeness that hides what matters.
+缩短或清理文档时，请依次执行以下步骤：
 
-Then provide concrete edits or a rewritten version when useful. Do not stop at abstract advice if the user asked for a rewrite or file change.
+1. 保留主路径：读者需要知道或执行的内容。
+2. 合并重复要点。
+3. 删除不会改变行动、判断或理解的信息。
+4. 将冗长解释转化为标准、规则、示例或边界。
+5. 只保留达到信任和行动所需程度的证据。
+6. 删除轶事，除非它们是理解内容的最短路径。
+7. 只保留读者需要的定义。
+8. 优先使用具体动词和直接语序。
 
-## Quality Check
-
-Before delivering, check:
+压缩后，确认读者仍能回答：
 
 ```text
-Is the target reader clear?
-Is the intended decision, action, or understanding clear?
-Does the main point appear early enough?
-Did I remove information that does not serve this purpose?
-Are facts, assumptions, risks, and recommendations separated?
-Is the language natural for the user and audience?
-Does the document respect domain context without assuming a domain?
-Can someone outside the conversation understand the result well enough to act?
+重点是什么？
+为什么我应当关心？
+接下来我该做什么？
+哪些证据或约束很重要？
+有哪些限制或不确定性？
 ```
 
-If the answer is no, fix structure before polishing wording.
+## 审查模式
 
-## Output Behavior
+审查现有文档时，首先指出最影响沟通效果的问题。重点关注：
 
-If the user asks for direct edits, make the edits and briefly summarize what changed.
+- 受众或目的不明确。
+- 要点缺失或埋藏过深。
+- 背景内容淹没与决策相关的信息。
+- 事实、假设、意见和建议混杂。
+- 结构反映的是作者的写作过程，而不是读者的任务。
+- 语气或语言不适合读者。
+- 过度追求完整性，反而掩盖要点。
 
-If the user asks for a review, list the most important communication problems first, then actionable fixes.
+然后在适当时提供具体编辑或重写版本。如果用户要求重写或修改文件，不要止步于抽象建议。
 
-If the user asks for compression, state the compression target and preservation standard, then provide a shorter version.
+## 质量检查
 
-If the user asks for a new document, infer or ask for audience, purpose, and desired outcome before writing.
+交付前，请检查：
+
+```text
+目标读者是否明确？
+预期的决策、行动或理解是否明确？
+要点是否足够靠前？
+是否删除了无助于当前目的的信息？
+事实、假设、风险和建议是否分开？
+语言对于用户和受众来说是否自然？
+文档是否尊重领域上下文而不预设领域？
+对话之外的人是否能充分理解结果并据此行动？
+```
+
+如果答案是否定的，请先修正结构，再润色措辞。
+
+## 输出行为
+
+如果用户要求直接编辑，请执行编辑并简要总结变更。
+
+如果用户要求审查，请先列出最重要的沟通问题，然后给出可执行的修复措施。
+
+如果用户要求压缩，请说明压缩目标和保留标准，然后提供更短的版本。
+
+如果用户要求编写新文档，请在写作前推断或询问受众、目的和期望结果。

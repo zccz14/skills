@@ -1,32 +1,28 @@
-# Reliable Model
+# 可靠模型
 
-A general-purpose agent skill for creating, reviewing, and validating reliable
-models.
+一个通用 Agent Skill，用于创建、审查和验证可靠模型。
 
-This skill defines reliability as a two-leg standard:
+此技能将可靠性定义为一项双支柱标准：
 
 ```text
-Reliable model = prior rationale + empirical validation
+可靠模型 = 先验依据 + 实证验证
 ```
 
-It helps separate reliable conclusions from black-box correlations, empty
-stories, post-hoc leads, and unreliable claims.
+它有助于区分可靠结论与黑箱相关性、空洞叙事、事后线索及不可靠主张。
 
-## Use Cases
+## 使用场景
 
-- Design or modify a model, rule, scoring system, filter, ranking function, or
-  prediction policy.
-- Explain an observed result, metric change, failure case, or residual.
-- Review whether a model claim is supported by both mechanism and evidence.
-- Detect selection bias, leakage, selective reporting, or post-hoc storytelling.
+- 设计或修改模型、规则、评分系统、筛选器、排序函数或预测策略。
+- 解释观测结果、指标变化、失败案例或残差。
+- 审查一项模型主张是否同时得到机制和证据支持。
+- 发现选择偏差、泄漏、选择性报告或事后编造叙事。
 
-## Files
+## 文件
 
-- `SKILL.md` contains the complete skill.
+- `SKILL.md` 包含完整技能内容。
 
-## Install
+## 安装
 
-Copy this directory into your agent skills directory, or package it using your
-agent runtime's skill packaging workflow.
+将此目录复制到你的 Agent 技能目录，或使用 Agent 运行时的技能打包工作流程对其进行打包。
 
-The skill name is `reliable-model`.
+技能名称为 `reliable-model`。
