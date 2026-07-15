@@ -1,227 +1,226 @@
 ---
 name: clean-code
-description: Use for every coding task to control flow complexity. For any task that creates or modifies code, also use clean-agent coordination mode so creator and reviewer SubAgents apply clean-code as their shared code specification. Enforces a complexity gate that treats each branch as an added logical path requiring explicit business justification, especially during implementation and code review.
+description: 用于每一项编程任务，以控制流程复杂度。对于任何创建或修改代码的任务，还应使用 clean-agent 协调模式，让创建者和审查者 SubAgent 将 clean-code 作为共同的代码规范。它强制执行复杂度门禁，将每个分支视为新增的逻辑路径，要求有明确的业务理由，尤其适用于实现和代码审查。
 ---
 
 # clean-code
 
-Keep code correct by controlling flow complexity.
+通过控制流程复杂度来保证代码正确。
 
-## Coordination Requirement
+## 协调要求
 
-For any task that creates or modifies code, including implementation, refactoring, and debugging fixes, require the main Agent to use `clean-agent` coordination mode. Keep `clean-code` as the domain gate: pass it to both the creator and reviewer as the same shared specification. Let `clean-agent` own role separation, review, retries, and escalation; do not replace this skill's complexity criteria with orchestration rules.
+对于任何创建或修改代码的任务，包括实现、重构和调试修复，都要求主 Agent 使用 `clean-agent` 协调模式。将 `clean-code` 作为领域门禁：把它作为同一份共享规范交给创建者和审查者 SubAgent。由 `clean-agent` 负责角色分离、审查、重试和升级；不要用编排规则取代本技能的复杂度标准。
 
-Treat the current role as already inside a `clean-agent` loop only when the task explicitly assigns `clean-agent` creation mode or review mode and provides the same shared specification sources plus the applicable artifact paths or review contract. Then perform that role directly without dispatching another SubAgent or starting a nested loop. Being a SubAgent, receiving a delegated task, or being asked to write a file does not qualify for this exemption.
+仅当任务明确指定 `clean-agent` 创建模式或审查模式，并提供相同的共享规范来源以及适用的产物路径或审查约定时，才可将当前角色视为已处于 `clean-agent` 循环中。此时直接履行该角色，无需再派发其他 SubAgent 或启动嵌套循环。仅仅身为 SubAgent、收到委派任务或被要求写入文件，都不满足此豁免条件。
 
-Apply `clean-code` directly to read-only code explanation, diagnosis, or review only when the task does not create or modify an artifact.
+只有在任务不创建或修改任何产物时，才可直接将 `clean-code` 用于只读的代码讲解、诊断或审查。
 
-## When to use
+## 使用时机
 
-Use this skill for every coding task, especially implementation, refactoring, debugging, and code review.
+每项编程任务都应使用本技能，尤其是实现、重构、调试和代码审查。
 
-## Principles
+## 原则
 
-1. **Complexity is the number of paths**: Every branch multiplies the paths that must be understood, tested, and proven to match the intended business semantics. Do not add a branch unless its necessity is explicit.
-2. **Compatibility is debt**: Avoid adding code that is only compatible with existing systems or conventions without a clear business reason, as it increases complexity without providing value. Don't compatible-ize unless necessary for a specific business need.
-3. **Minimal Error Handling**: Catch only errors the code knows how to handle, and keep error recovery separate from ordinary business flow. Avoid adding error handling that hides unknown states or swallows errors without a clear recovery strategy. Don't log or catch errors everywhere.
-4. **Linear Flow First**: Prefer a straight-line process inside each function. If the process requires category-by-category discussion, extract that classification into a more specific function where each case can be handled linearly.
-5. **Divide and Conquer**: When you need to solve a problem with multiple items, consider whether to solve it with a single path that iterates over the items, or with multiple paths that each handle one item. Don't add paths for each item unless there is a clear business reason to treat them separately.
-6. **Compatibility must be collectable**: Every compatibility path needs an owner, a reason, and a release condition. If future cleanup cannot be judged, the compatibility design is leaking complexity.
-7. **Minimize object compatibility surface**: Prefer procedural and functional code by default. Avoid classes, inheritance, mutable instance state, and public object members unless they reduce path reasoning or are required by a concrete boundary.
+1. **复杂度就是路径数量**：每个分支都会使需要理解、测试并证明符合预期业务语义的路径成倍增加。除非明确需要，否则不要增加分支。
+2. **兼容性就是债务**：如果没有明确的业务理由，应避免加入仅为兼容现有系统或惯例的代码，因为这会增加复杂度，却不产生价值。除非特定业务确有需要，否则不要进行兼容性改造。
+3. **最少错误处理**：只捕获代码知道如何处理的错误，并将错误恢复与常规业务流程分开。避免加入会掩盖未知状态的错误处理，也不要在没有明确恢复策略的情况下吞掉错误。不要到处记录或捕获错误。
+4. **线性流程优先**：每个函数内部应优先采用直线式流程。如果流程需要逐类别讨论，应将分类逻辑提取到更具体的函数中，以便在其中线性处理每种情况。
+5. **分而治之**：需要解决包含多个元素的问题时，应考虑是用一条路径遍历这些元素，还是用多条路径分别处理各个元素。除非有明确的业务理由需要区别对待，否则不要为每个元素增加单独路径。
+6. **兼容性必须可回收**：每条兼容路径都需要有负责人、存在理由和退出条件。如果未来无法判断如何清理，这项兼容设计就在泄漏复杂度。
+7. **最小化对象兼容面**：默认优先使用过程式和函数式代码。除非类、继承、可变实例状态和公共对象成员能够减少路径推理，或某个具体边界要求使用它们，否则应避免采用。
 
-## Instructions
+## 指令
 
-1. Treat complexity as the number of possible logical paths through a program.
+1. 将复杂度视为程序中可能存在的逻辑路径数量。
 
-   Every branch multiplies the paths that must be understood, tested, and proven to match the intended business semantics. Humans and AI agents both fail when there are too many paths to hold in attention. Do not add a branch unless its necessity is explicit.
+   每个分支都会使需要理解、测试并证明符合预期业务语义的路径成倍增加。需要同时关注的路径过多时，人类和 AI 智能体都会出错。除非明确需要，否则不要增加分支。
 
-2. Treat every logical divergence as a branch.
+2. 将每个逻辑分流点都视为分支。
 
-   Branches include `if`, `else`, `switch`, ternaries, `try`, `catch`, `throw`, loops, `break`, `continue`, `return`, `await`, callbacks, forks, spawned work, feature flags, boolean parameters, fallback paths, and any other point where execution can diverge.
+   分支包括 `if`、`else`、`switch`、三元表达式、`try`、`catch`、`throw`、循环、`break`、`continue`、`return`、`await`、回调、分叉、派生工作、功能标志、布尔参数、回退路径，以及执行可能发生分流的任何其他位置。
 
-3. Apply the complexity gate before changing code.
+3. 在修改代码前应用复杂度门禁。
 
-   For every new or modified branch, require a sufficient reason:
-   - What business rule, input class, or failure mode does this path represent?
-   - Why must it be a separate path instead of part of the main path?
-   - Can this path be deleted, merged, shortened, or moved behind a clearer boundary?
-   - How will this path be verified by tests, existing behavior, or explicit reasoning?
+   每个新增或修改的分支都必须有充分理由：
+   - 这条路径代表哪项业务规则、输入类别或故障模式？
+   - 为什么它必须是一条独立路径，而不能成为主路径的一部分？
+   - 能否删除、合并、缩短这条路径，或将其移到更清晰的边界之后？
+   - 如何通过测试、现有行为或明确推理验证这条路径？
 
-   If the path exists for compatibility, also require:
-   - Who or what depends on this compatibility behavior?
-   - What condition allows this path to be removed?
-   - How can future humans or AI agents verify that removal is safe?
+   如果这条路径是为兼容性而存在，还必须回答：
+   - 谁或什么依赖这项兼容行为？
+   - 满足什么条件后可以移除这条路径？
+   - 未来的人类或 AI 智能体如何验证移除操作是安全的？
 
-   If a branch lacks a sufficient reason, treat it as a defect. Do not normalize it as style, preference, or harmless flexibility. If a compatibility path has no owner, no observable dependency, or no release condition, treat it as leaking complexity and do not add it.
+   如果一个分支缺乏充分理由，应将其视为缺陷。不要把它合理化为代码风格、个人偏好或无害的灵活性。如果一条兼容路径没有负责人、可观察的依赖或退出条件，应将其视为复杂度泄漏，不要加入它。
 
-4. Implement with the fewest necessary paths.
-   - Prefer the smallest correct change.
-   - Keep the main path straight and visible.
-   - Prefer linear flow inside each function; move classification and case-specific discussion behind a clearer function boundary.
-   - Make necessary branches short, local, named when useful, and easy to test.
-   - Avoid nested branches unless each nested decision has a clear independent semantic reason.
-   - Do not add boolean or mode parameters unless each mode is a real business concept.
-   - Do not add fallback behavior that hides unknown states or swallows errors.
-   - Catch only errors the code knows how to handle, and keep error recovery separate from ordinary business flow.
-   - Split code when one function is forced to manage unrelated paths.
-   - Use data structure, table-driven dispatch, or polymorphism only when it reduces path reasoning.
-   - Prefer procedural or functional code when it keeps dependencies explicit, flow local, and compatibility surfaces small.
-   - Do not introduce a class, inheritance hierarchy, mutable instance state, or public object API only to reduce parameter count or prepare for future extension.
-   - Prefer explicit parameters over hidden object state. If the language supports named parameters, prefer named parameters for readability and mistake prevention.
-   - Treat every public field, method, override hook, fallback, flag, migration path, and compatibility API as a compatibility commitment that needs a release condition.
+4. 使用最少的必要路径进行实现。
+   - 优先选择最小且正确的改动。
+   - 让主路径保持笔直且清晰可见。
+   - 每个函数内部优先采用线性流程；将分类和针对具体情况的讨论移到更清晰的函数边界之后。
+   - 让必要分支保持短小、局部；适当命名，并确保易于测试。
+   - 避免嵌套分支，除非每个嵌套决策都有清晰且独立的语义理由。
+   - 不要增加布尔参数或模式参数，除非每种模式都代表真实的业务概念。
+   - 不要增加会掩盖未知状态或吞掉错误的回退行为。
+   - 只捕获代码知道如何处理的错误，并将错误恢复与常规业务流程分开。
+   - 当一个函数被迫管理互不相关的路径时，应拆分代码。
+   - 只有在能减少路径推理时，才使用数据结构、表驱动分派或多态。
+   - 当过程式或函数式代码能让依赖关系保持显式、流程保持局部且兼容面保持较小时，应优先采用。
+   - 不要仅仅为了减少参数数量或为未来扩展做准备，就引入类、继承层次结构、可变实例状态或公共对象 API。
+   - 显式参数优于隐藏的对象状态。如果语言支持具名参数，应优先使用具名参数，以提高可读性并避免错误。
+   - 将每个公共字段、方法、覆写钩子、回退、标志、迁移路径和兼容 API 都视为一项需要退出条件的兼容承诺。
 
-5. Review flow complexity before style.
+5. 先审查流程复杂度，再审查代码风格。
 
-   List findings by severity:
-   - `blocker`: a new or existing path lacks sufficient business meaning, hides failure, or makes correctness hard to prove.
-   - `non-blocker`: a path is necessary but could be shorter, clearer, more local, or better tested.
+   按严重程度列出发现：
+   - `blocker`：新增或现有路径缺乏充分的业务含义、掩盖故障，或使正确性难以证明。
+   - `non-blocker`：路径确有必要，但可以更短、更清晰、更局部，或得到更充分的测试。
 
-   For each finding, name the branch and explain:
-   - The paths it creates.
-   - Why those paths are insufficiently justified or hard to reason about.
-   - The concrete simplification: delete, merge, shorten, split, move, test, or clarify the branch.
+   对每项发现，都应指出具体分支并说明：
+   - 它创建了哪些路径。
+   - 为什么这些路径理由不足，或难以推理。
+   - 具体如何简化：删除、合并、缩短、拆分、移动、测试或澄清该分支。
 
-6. Report the complexity result for non-trivial changes.
+6. 对非简单改动报告复杂度结果。
 
-   Include:
-   - New paths added.
-   - Why each path is necessary.
-   - Whether any path exists for compatibility.
-   - For each compatibility path, its owner, dependency, release condition, and safe-removal verification.
-   - How the paths were kept local and verified.
+   包括：
+   - 新增的路径。
+   - 每条路径为什么必要。
+   - 是否有任何路径是为兼容性而存在。
+   - 对每条兼容路径，说明其负责人、依赖、退出条件和安全移除验证方式。
+   - 如何保持路径局部化并进行验证。
 
-   If no new paths were added, say so. If no compatibility path was added, say so.
+   如果没有新增路径，应明确说明。如果没有新增兼容路径，也应明确说明。
 
-## Compatibility is the source of Complexity
+## 兼容性是复杂度的来源
 
-Compatibility decides what inputs are valid and how the system should respond to them, which creates branches in the code. If we design for a specific set of inputs and behaviors, we can keep the code simple and focused. If we try to be more compatible with different inputs, edge cases, or failure modes, we add branches that increase complexity and make the code harder to understand and maintain. Therefore, compatibility is a form of technical debt that should only be taken on when there is a clear business need for it.
+兼容性决定哪些输入有效，以及系统应如何响应这些输入，由此在代码中产生分支。如果只针对一组特定输入和行为进行设计，代码就能保持简单、聚焦。如果试图兼容更多不同的输入、边缘情况或故障模式，就会增加分支，使复杂度上升，并让代码更难理解和维护。因此，兼容性是一种技术债务，只有存在明确的业务需要时才应承担。
 
-AI agents can accidentally add compatibility paths but never have enough context to remove them, so they need to be guided to avoid adding unnecessary paths and to keep the main path clear.
+AI 智能体可能会意外增加兼容路径，但又始终没有足够上下文来移除它们，因此必须引导智能体避免增加不必要的路径，并让主路径保持清晰。
 
-The strategy is to start with a minimal implementation that solves the problem for the most case, and only add branches when there is a clear business issue that requires them.
+策略是从一个最小实现开始，解决最常见的情况；只有当明确的业务问题确实需要时，才增加分支。
 
-## Compatibility Must Be Collectable
+## 兼容性必须可回收
 
-Compatibility is like memory allocation: every compatibility path allocates complexity, and every allocation needs a release condition. Compatibility is not garbage-collected automatically; it must be designed so humans and AI agents can later judge whether it is safe to remove.
+兼容性类似内存分配：每条兼容路径都会分配复杂度，而每次分配都需要退出条件。兼容性不会被自动垃圾回收；在设计时必须确保人类和 AI 智能体日后能够判断是否可安全移除。
 
-Do not add compatibility behavior unless its lifetime is clear. A compatibility path should document what code cannot express: who depends on the compatibility behavior, what condition allows it to be removed, and how future maintainers can verify that removal is safe.
+除非生命周期明确，否则不要增加兼容行为。兼容路径应记录代码无法表达的信息：谁依赖这项兼容行为、满足什么条件后可移除，以及未来维护者如何验证移除操作是安全的。
 
-Use a `COMPATIBILITY` comment next to compatibility branches when the removal condition is not obvious from code:
+当代码无法明显体现移除条件时，在兼容分支旁使用 `COMPATIBILITY` 注释：
 
 ```ts
-// COMPATIBILITY: Mobile clients before 4.8 send `user_id`.
-// Remove when mobile <4.8 traffic stays below 1% for 30 days.
+// COMPATIBILITY: 4.8 之前的移动客户端会发送 `user_id`。
+// 当低于 4.8 的移动客户端流量连续 30 天低于 1% 时移除。
 const userId = body.userId ?? body.user_id;
 ```
 
-If a compatibility path has no clear owner, no observable dependency, or no release condition, treat it as a leak. Avoid designing APIs, object models, flags, fallbacks, migrations, or public members that cannot be judged collectable later.
+如果兼容路径没有明确的负责人、可观察的依赖或退出条件，应将其视为泄漏。避免设计日后无法判断是否可回收的 API、对象模型、标志、回退、迁移或公共成员。
 
-Good compatibility design makes cleanup possible. Bad compatibility design creates permanent residue.
+良好的兼容设计让清理成为可能。糟糕的兼容设计会产生永久残留。
 
-## Minimize Object Compatibility Surface
+## 最小化对象兼容面
 
-Avoid object-oriented design by default, especially public mutable object models, inheritance, and override-based behavior. Classes turn every public field and method into a compatibility surface. Once exposed, AI agents and humans both have difficulty proving whether each public member must remain compatible, so classes tend to accumulate compatibility debt and cause complexity to grow explosively.
+默认应避免面向对象设计，尤其是公共可变对象模型、继承和基于覆写的行为。类会把每个公共字段和方法都变成兼容面。成员一旦公开，AI 智能体和人类都很难证明每个公共成员是否必须保持兼容，因此类往往会积累兼容债务，导致复杂度爆炸式增长。
 
-Prefer procedural or functional design unless object-oriented modeling is required by the language, framework, external API, persisted data model, or an explicit business need. The goal is not to follow a paradigm, but to keep dependencies explicit, flows local, and compatibility surfaces small.
+除非语言、框架、外部 API、持久化数据模型或明确的业务需要要求使用面向对象建模，否则应优先选择过程式或函数式设计。目标不是遵循某种范式，而是让依赖关系保持显式、流程保持局部，并让兼容面保持较小。
 
-| Style | Prefer when | Avoid when | Complexity risk |
+| 风格 | 适合采用的情形 | 应避免的情形 | 复杂度风险 |
 | --- | --- | --- | --- |
-| Procedural | The task is a clear sequence of operations with explicit inputs and outputs. | It relies on global state, hidden initialization order, or long functions that mix unrelated workflows. | Can become a large implicit state machine if shared state is not controlled. |
-| Functional | The logic can be expressed as pure transformations, validation, calculation, or data mapping. | It becomes point-free, overly abstract, deeply nested, or hides control flow behind generic combinators. | Can hide paths behind higher-order abstractions and make debugging indirect. |
-| Object-oriented | The language, framework, external API, persisted model, or business domain requires stable object boundaries. | It is introduced only to reduce parameter count, prepare for future extension, or create broad public APIs. | Public members, inheritance, mutable instance state, and overrides create compatibility surfaces and hidden paths. |
+| 过程式 | 任务是一系列清晰的操作，具有显式输入和输出。 | 依赖全局状态、隐藏的初始化顺序，或使用混合了互不相关工作流的长函数。 | 如果共享状态不受控制，可能演变成庞大的隐式状态机。 |
+| 函数式 | 逻辑可表达为纯转换、验证、计算或数据映射。 | 变成无点风格（point-free）、过度抽象、深度嵌套，或将控制流隐藏在通用组合器之后。 | 可能把路径隐藏在高阶抽象之后，使调试变得间接。 |
+| 面向对象 | 语言、框架、外部 API、持久化模型或业务领域要求稳定的对象边界。 | 仅为了减少参数数量、为未来扩展做准备，或创建宽泛的公共 API 而引入。 | 公共成员、继承、可变实例状态和覆写会产生兼容面和隐藏路径。 |
 
-Do not treat many parameters as a reason to introduce an object or class. In AI-assisted programming, passing explicit parameters is acceptable because the cost of writing and updating call sites is much lower than the cost of maintaining an unclear compatibility surface. If the language supports named parameters, prefer named parameters for readability and mistake prevention.
+不要因为参数较多就引入对象或类。在 AI 辅助编程中，传递显式参数是可以接受的，因为编写和更新调用点的成本远低于维护不清晰兼容面的成本。如果语言支持具名参数，应优先使用具名参数，以提高可读性并避免错误。
 
-When object-oriented code is necessary, keep it narrow:
-- Minimize public fields and methods.
-- Prefer composition over inheritance.
-- Avoid mutable instance state when plain data can be passed explicitly.
-- Avoid override hooks unless the extension point is a real business requirement.
-- Treat every public member as a compatibility commitment.
+必须使用面向对象代码时，应保持范围狭窄：
+- 尽量减少公共字段和方法。
+- 组合优于继承。
+- 当普通数据可以显式传递时，避免使用可变实例状态。
+- 避免使用覆写钩子，除非该扩展点是真实的业务要求。
+- 将每个公共成员都视为一项兼容承诺。
 
-## Modeling Error is the source of bug
+## 建模误差是缺陷的来源
 
-Code represents real-world concepts, but never the real world itself.
+代码表示现实世界中的概念，但永远不等于现实世界本身。
 
-Suppose we have a branch condition that checks a real-world state. The code can be wrong by accepting, granting, matching, or allowing something it should not, or by rejecting, denying, missing, or blocking something it should allow. If the code fully knew how to classify the real world, the modeling error would not exist. For modeling errors that cannot be eliminated, reason about whether the system remains safe and recoverable when the approximation is wrong.
+假设有一个分支条件用于检查现实世界的某种状态。代码可能错误地接受、授权、匹配或允许本应拒绝的事物，也可能错误地拒绝、否认、漏掉或阻止本应允许的事物。如果代码完全知道如何对现实世界进行分类，建模误差就不会存在。对于无法消除的建模误差，应推理当近似判断出错时，系统是否仍然安全且可恢复。
 
-Think about the **probability and impact** of these errors.
+应考虑这些错误的**概率和影响**。
 
-- High Probability: If the branch condition is based on a complex heuristic, an external system, or a new feature, it is more likely to be wrong.
-- High Impact: If the branch condition controls a critical business rule, a security check, or a costly operation, it is more likely to cause significant damage if it is wrong.
+- 高概率：如果分支条件基于复杂启发式规则、外部系统或新功能，就更有可能出错。
+- 高影响：如果分支条件控制关键业务规则、安全检查或高成本操作，一旦出错就更有可能造成重大损失。
 
-Use an `ASSUMPTION` comment before fuzzy or approximate branches. The comment must be self-contained: name the real-world state being approximated, then explain how the system remains safe if the branch is wrong in either direction. Prefer behavior words from the domain over abstract terms like false positive or false negative.
+在模糊或近似分支前使用 `ASSUMPTION` 注释。注释必须自洽完整：指出所近似的现实状态，然后说明如果分支在任一方向判断错误，系统为何仍然安全。优先使用领域中的行为词，而不是假阳性或假阴性等抽象术语。
 
 ```ts
-// ASSUMPTION: Treat a matching email domain as a weak signal that the user may
-// belong to this organization.
-// If this accepts the wrong user: they only see the join request screen and
-// cannot access organization data until an admin approves.
-// If this rejects the right user: they can still request an invite manually.
+// ASSUMPTION: 将电子邮件域名匹配视为用户可能属于该组织的弱信号。
+// 如果错误地接受用户：他们只能看到加入申请页面，且在管理员批准前
+// 无法访问组织数据。
+// 如果错误地拒绝用户：他们仍可手动申请邀请。
 if (email.endsWith(companyDomain)) {
   showJoinRequest();
 }
 ```
 
 ```ts
-// ASSUMPTION: Treat a recent successful payment as enough evidence that the
-// subscription is active while billing webhooks may be delayed.
-// If this grants access incorrectly: access is limited to the current billing
-// period and the next webhook or reconciliation job will revoke it.
-// If this denies access incorrectly: the user can retry after webhook sync or
-// contact support; no billing state is mutated here.
+// ASSUMPTION: 在计费 webhook 可能延迟时，将近期成功付款视为
+// 订阅处于活跃状态的充分证据。
+// 如果错误地授予访问权限：访问仅限当前计费周期，下一次 webhook 或
+// 对账任务会撤销权限。
+// 如果错误地拒绝访问：用户可在 webhook 同步后重试或联系支持人员；
+// 此处不会修改任何计费状态。
 if (lastPayment.status === "succeeded") {
   allowAccess();
 }
 ```
 
-If the comment cannot explain why the system remains safe or recoverable when the approximation is wrong, treat the branch as a possible bug or vulnerability. Do not use comments to paper over that risk; reduce permission, add verification, move the decision behind a clearer boundary, or make the failure mode explicit.
+如果注释无法解释近似判断出错时系统为何仍然安全或可恢复，应将该分支视为潜在缺陷或漏洞。不要用注释掩盖风险；应减少权限、增加验证、将决策移到更清晰的边界之后，或明确说明故障模式。
 
-If error is low probability and low impact, we can accept the risk of the branch being wrong, but we should still monitor it and be ready to fix it if it causes problems.
+如果错误概率低且影响小，可以接受分支判断错误的风险，但仍应对其进行监控，并在造成问题时及时修复。
 
-## Code Comment Policy
+## 代码注释策略
 
-Comments should cover facts the code cannot prove by itself. Do not comment ordinary straight-line code, obvious assignments, or behavior that names and tests can express.
+注释应说明代码自身无法证明的事实。不要注释普通的直线式代码、显而易见的赋值，或可通过命名和测试表达的行为。
 
-Use comments mainly for:
-- `COMPATIBILITY`: a compatibility branch whose safe removal condition is not expressible in code.
-- `ASSUMPTION`: a fuzzy or approximate real-world model where the system must remain safe if the approximation is wrong.
-- `RECOVERY`: an error-handling path that uses a real fallback, bounded retry, context-preserving rethrow, or boundary-level report.
-- `INVARIANT`: a local dependency on a fact that is enforced elsewhere and cannot be proven at the current site.
+注释主要用于：
+- `COMPATIBILITY`：安全移除条件无法在代码中表达的兼容分支。
+- `ASSUMPTION`：对现实世界进行模糊或近似建模，且近似判断出错时系统必须保持安全。
+- `RECOVERY`：使用真实回退、有限重试、保留上下文后重新抛出，或边界层报告的错误处理路径。
+- `INVARIANT`：局部代码依赖一项在其他位置强制执行、且无法在当前位置证明的事实。
 
-If a comment is needed only to explain what the code does, simplify or rename the code instead. If a long comment is needed to justify a branch, first try to delete, merge, shorten, split, move, test, or clarify that branch.
+如果注释仅用于解释代码做了什么，应改为简化代码或重新命名。如果需要长篇注释才能证明某个分支合理，应先尝试删除、合并、缩短、拆分、移动、测试或澄清该分支。
 
-## Error Handling (Runtime Exceptions)
+## 错误处理（运行时异常）
 
-Error throwing and catching are powerful tools that create new complexity paths, so they must be used with care.
+错误抛出和捕获是会创建新复杂路径的强大工具，因此必须谨慎使用。
 
-Error handling in `try-catch` always has exactly four valid choices.
+`try-catch` 中的错误处理始终只有以下四种有效选择。
 
-A `try-catch` is allowed only when the code can make one of these decisions:
+只有当代码能作出以下某项决策时，才允许使用 `try-catch`：
 
-1.  **FALLBACK AVAILABLE**: It knows how to handle the failure: use a real fallback, such as cached data or a looser parser.
-2.  **RETRY IF ACCIDENTAL**: It believes the failure is accidental or transient: retry with a clear retry limit or policy.
-3.  **ENHANCE CONTEXT**: It can add missing context: wrap and rethrow while preserving the original stack with `cause` or an existing project helper.
-4.  **LOG AT BOUNDARY**: It cannot handle the failure locally: report or present the error, contain the blast radius, and notify external intervention at a boundary such as API, GUI, CLI, worker, delegate, or error boundary code.
+1. **FALLBACK AVAILABLE**：代码知道如何处理故障：使用真实回退，例如缓存数据或更宽松的解析器。
+2. **RETRY IF ACCIDENTAL**：代码认为故障是偶发或暂时的：按照明确的重试上限或策略重试。
+3. **ENHANCE CONTEXT**：代码可以补充缺失的上下文：包装后重新抛出，并通过 `cause` 或项目现有辅助函数保留原始堆栈。
+4. **LOG AT BOUNDARY**：代码无法在本地处理故障：在 API、GUI、CLI、工作进程、委托或错误边界代码等边界处报告或呈现错误、控制影响范围，并通知外部介入。
 
-In every other case, never catch. Do not catch only to log, ignore, translate without preserving the original error, or make the code look defensive. Log where the error is presented or reported, not at every layer. If wrapping is useful, prefer an existing helper such as `newError` or `scopeError`; otherwise use `new Error(message, { cause: error })` where supported.
+其他情况下绝不要捕获。不要仅为了记录、忽略错误、不保留原始错误地转换错误，或让代码看起来防御性更强而捕获错误。应在呈现或报告错误的地方记录，而不是在每一层都记录。如果包装错误有帮助，应优先使用 `newError` 或 `scopeError` 等现有辅助函数；否则，在受支持时使用 `new Error(message, { cause: error })`。
 
-## Divide and Conquer
+## 分而治之
 
-When you need to solve a problem with multiple items, consider whether to solve it with a single path that iterates over the items, or with multiple paths that each handle one item. Don't add paths for each item unless there is a clear business reason to treat them separately.
+需要解决包含多个元素的问题时，应考虑是用一条路径遍历这些元素，还是用多条路径分别处理各个元素。除非有明确的业务理由需要区别对待，否则不要为每个元素增加单独路径。
 
-### Collection to Element
+### 从集合到元素
 
-for-loops need to narrow the collection problem into a single item to be a single path. If the items are truly independent, they can be separate paths. If they are part of the same problem, they should be handled in a single path that iterates over them. This keeps the main path clear and avoids unnecessary branching.
+`for` 循环需要把集合问题收窄为单个元素，才能形成一条路径。如果这些元素真正彼此独立，它们可以成为不同路径。如果它们属于同一个问题，就应在一条路径中通过遍历统一处理。这样可以让主路径保持清晰，避免不必要的分支。
 
-### General to Specific
+### 从一般到具体
 
-When handling a problem that has a general case and specific cases, consider whether the specific cases can be handled as part of the main path with conditional logic, or if they require separate paths. If the specific cases are just variations of the general case, they can often be handled in the same path with clear conditions. If they represent fundamentally different scenarios, they may warrant separate paths.
+处理同时包含一般情况和特殊情况的问题时，应考虑特殊情况能否作为主路径的一部分用条件逻辑处理，还是必须使用独立路径。如果特殊情况只是一般情况的变体，通常可以在同一条路径中用清晰条件处理。如果它们代表本质不同的场景，则可能值得使用独立路径。
 
-## Linear Flow First
+## 线性流程优先
 
-Prefer a linear process inside each function. A reader should be able to follow the function as one general flow with only the necessary local decisions.
+每个函数内部应优先采用线性流程。读者应能把函数理解为一条通用流程，其中只包含必要的局部决策。
 
-When a function needs to discuss multiple categories, types, modes, or scenarios, treat that as a signal to divide the problem. Keep the caller focused on the general process, and extract the category-specific discussion into a more specific function where that narrower problem can be handled linearly.
+当函数需要讨论多个类别、类型、模式或场景时，应将其视为拆分问题的信号。让调用方聚焦于通用流程，并将针对类别的讨论提取到更具体的函数中，使这个范围更窄的问题能够线性处理。
 
-This follows General to Specific: the outer function describes the broad workflow, while inner functions handle the detailed cases. Do not make one function carry too many categories of flow at once.
+这遵循从一般到具体的原则：外层函数描述宽泛工作流，内层函数处理具体情况。不要让一个函数同时承载过多类别的流程。

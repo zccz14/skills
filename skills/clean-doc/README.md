@@ -1,23 +1,23 @@
 # clean-doc
 
-`clean-doc` is a general-purpose writing skill for purpose-driven documentation.
+`clean-doc` 是一项通用写作技能，用于创作目标导向型文档。
 
-It helps write, rewrite, shorten, review, and restructure human-facing text so it serves a specific reader, situation, and intended decision or action.
+它帮助编写、重写、缩短、审查和重构面向人类的文本，使其服务于特定读者、情境以及预期决策或行动。
 
-## Core Idea
+## 核心理念
 
-Good documentation is not complete documentation. Good documentation is efficient communication for a specific reader.
+好的文档不是完整的文档。好的文档是面向特定读者的高效沟通。
 
-This skill keeps one first principle while avoiding project-specific and domain-specific assumptions:
+本技能坚持一个第一原则，同时避免项目特定和领域特定的假设：
 
-- Write for a specific audience.
-- Express a specific intent efficiently.
-- Emphasize information that affects the reader's decision or action.
-- Avoid unnecessary completeness, excessive background, and bloated explanations.
-- Use the user's native language and habitual language style by default.
-- Let context define domain-specific writing plans, terminology, and tone.
+- 为特定受众写作。
+- 高效表达特定意图。
+- 强调会影响读者决策或行动的信息。
+- 避免不必要的完整性、过多背景和臃肿的解释。
+- 默认使用用户的母语和惯用语言风格。
+- 让上下文定义领域特定的写作方案、术语和语气。
 
-## Repository Layout
+## 仓库布局
 
 ```text
 clean-doc/
@@ -26,35 +26,35 @@ clean-doc/
 `-- .gitignore
 ```
 
-## Skill Metadata
+## 技能元数据
 
-- Skill name: `clean-doc`
-- Scope: general documentation and purpose-specific communication
-- Domain assumptions: none
+- 技能名称：`clean-doc`
+- 范围：通用文档和目标明确的沟通
+- 领域假设：无
 
-## Use Cases
+## 使用场景
 
-- README files
-- Internal memos
-- Design documents
-- Product specs
-- Execution guides
-- Review comments
-- Onboarding material
-- Incident writeups
-- Public updates
-- Proposals
-- Policies
-- Tutorials
+- README 文件
+- 内部备忘录
+- 设计文档
+- 产品规范
+- 执行指南
+- 审查意见
+- 入门材料
+- 事故报告
+- 公开更新
+- 提案
+- 政策
+- 教程
 
-## Installation
+## 安装
 
 ```sh
 npx skills add zccz14/clean-doc
 ```
 
-## Maintenance Notes
+## 维护说明
 
-This repo should stay independent from any domain-specific project.
+本仓库应保持独立于任何领域特定项目。
 
-When adding examples or rules, keep them general unless they are clearly labeled as examples. Domain-specific writing schemes should be introduced by the caller's context, not embedded into the skill itself.
+添加示例或规则时，除非已明确标记为示例，否则请保持其通用性。领域特定的写作方案应由调用方的上下文引入，而不应嵌入技能本身。

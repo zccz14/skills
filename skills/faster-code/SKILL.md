@@ -1,130 +1,130 @@
 ---
 name: faster-code
-description: Use this skill whenever code is slow, times out, gets killed, burns substantial CPU, runs long batch jobs, performs parameter scans, trains models, processes large datasets, runs simulations, or has unknown target-scale runtime. It guides progressive runtime probing, online N-T progress instrumentation when feasible, fixed-timeout sampling, N-T scaling estimation, and full-run go/no-go decisions before attempting target scale. If optimization happens, it requires preserving slow-version canonical output, proving byte-for-byte semantic equivalence, and prioritizing removal of wasted work before spending more CPU through parallelism. This skill does not wrap profiler tools and does not provide generic optimization recipes; it decides whether to run full scale, stop, or move into profiling and principled optimization.
+description: 当代码运行缓慢、超时、被终止、消耗大量 CPU、执行长时间批处理作业、进行参数扫描、训练模型、处理大型数据集、运行模拟，或目标规模运行时间未知时，使用本技能。它指导智能体逐步探测运行时间，在可行时进行在线 N-T 进度插桩，采用固定超时采样，执行 N-T 扩展估算，并在尝试目标规模前作出全规模运行的通过/不通过决策。如果进行了优化，它要求保留慢速版本的规范输出，证明语义逐字节等价，并在通过并行投入更多 CPU 前优先消除无效工作。本技能不封装性能分析工具，也不提供通用优化方案；它负责判断应全规模运行、停止，还是转入性能分析和原则性优化。
 ---
 
 # faster-code
 
-Use this skill to improve how compute-heavy code is run: first decide whether the target scale can finish within the runtime budget, then decide whether to run full scale, stop, or optimize. Do not start by throwing a slow program at a long timeout. A long timeout only proves the waste already happened; short bounded probes produce decision information early.
+使用本技能改进计算密集型代码的运行方式：先判断目标规模能否在运行时间预算内完成，再决定是全规模运行、停止还是优化。不要一开始就让缓慢程序在长超时下运行。长超时只能证明浪费已经发生；短时有界探测可以更早提供决策信息。
 
-## Core Goal
+## 核心目标
 
-Turn “can this finish at full scale?” into a pre-run gate:
+将“它能否在全规模下完成？”转化为运行前门禁：
 
-1. Define the target scale `N_full` and acceptable runtime budget `T_budget`.
-2. Prefer online `N-T` progress instrumentation when the program has a natural work counter and source edits are cheap.
-3. Build 3-5 valid `N-T` samples using short timeouts, progress logs, or sliced inputs.
-4. Estimate target-scale runtime with multiple simple models.
-5. If the estimate is unacceptable, do not run full scale; move to profiling, diagnosis, or optimization.
+1. 定义目标规模 `N_full` 和可接受的运行时间预算 `T_budget`。
+2. 当程序具有自然工作计数器且源代码修改成本较低时，优先采用在线 `N-T` 进度插桩。
+3. 使用短时超时、进度日志或输入切片构建 3–5 个有效 `N-T` 样本。
+4. 使用多个简单模型估算目标规模运行时间。
+5. 如果估算结果不可接受，不要全规模运行；转入性能分析、诊断或优化。
 
-If code is optimized, add a semantic gate: preserve canonical output from the slow version as the ground truth, then require the faster version to produce byte-for-byte identical canonical output on the same input slice. If floating-point differences are natural, normalize values before writing canonical output using a predeclared rounding or formatting rule. It is acceptable to lose limited precision for auditability, but the final comparison must still be byte-for-byte.
+如果代码经过优化，应增加语义门禁：保留慢速版本的规范输出作为真值，然后要求快速版本在同一输入切片上生成逐字节相同的规范输出。如果浮点数差异是自然现象，应在写入规范输出前，按照预先声明的舍入或格式规则对数值进行规范化。为便于审计，可以牺牲有限精度，但最终比较仍必须逐字节进行。
 
-Optimization has a priority order: avoid wasted computation before spending more computation. Reducing unnecessary work is usually better than hiding waste behind more cores. Parallelism can be useful, but treat it as a late option when algorithmic or workload reductions are unavailable, too risky, or insufficient for the runtime budget.
+优化有明确的优先顺序：先避免无效计算，再投入更多计算资源。减少不必要的工作通常优于用更多核心掩盖浪费。并行可能有用，但应作为靠后选项，仅在算法或工作负载削减不可用、风险过高或不足以满足运行时间预算时采用。
 
-## Online N-T First
+## 在线 N-T 优先
 
-Before choosing sliced batch runs, inspect the program for a natural progress counter. Many slow programs already have a loop over rows, files, tasks, parameter combinations, batches, epochs, windows, or requests. If that counter exists and editing the code is low risk, add online `N-T` progress logging first, then run one bounded probe.
+在选择切片批量运行前，先检查程序是否有自然进度计数器。许多慢速程序已经包含遍历行、文件、任务、参数组合、批次、epoch、窗口或请求的循环。如果存在这样的计数器，且编辑代码风险较低，应先加入在线 `N-T` 进度日志，再执行一次有界探测。
 
-Treat missing progress logs as a fixable instrumentation gap, not as proof that the program is batch-only.
+缺少进度日志应视为可修复的插桩缺口，而不是程序只能批量运行的证据。
 
-Add online sampling when all of these are true:
+以下条件全部满足时，加入在线采样：
 
-- there is a monotonic processed-work counter or one can be computed cheaply;
-- the counter maps to the chosen `N` or a defensible combined `N`;
-- logs can be emitted every 5-10 seconds or every coarse work interval without material overhead;
-- source edits are acceptable for this task and do not change computation semantics;
-- the program can flush logs before a timeout kills it.
+- 存在单调递增的已处理工作计数器，或可以低成本计算；
+- 该计数器能映射到选定的 `N`，或映射到有充分依据的组合 `N`；
+- 可以每 5–10 秒或每个较粗粒度的工作间隔输出日志，且不会产生显著开销；
+- 当前任务允许修改源代码，且修改不会改变计算语义；
+- 程序可在超时终止前刷新日志。
 
-Do not add online sampling when any of these are true:
+以下任一条件满足时，不要加入在线采样：
 
-- the only available counter would require expensive synchronization, global scans, or large memory changes;
-- logging would materially perturb the workload being measured;
-- the code cannot be safely edited in the current task;
-- the work is genuinely all-or-nothing and exposes no meaningful partial progress.
+- 唯一可用的计数器需要高成本同步、全局扫描或大幅增加内存；
+- 日志会显著扰动被测工作负载；
+- 当前任务无法安全编辑代码；
+- 工作确实不可分割，也不会暴露有意义的局部进度。
 
-Instrumentation should be minimal and parseable. Prefer one stable line shape:
+插桩应保持最小化且便于解析。优先使用一种稳定的行格式：
 
 ```text
 PERF_PROGRESS processed=120000 total=1000000 elapsed_sec=31.2 rate=3846.1 unit=rows
 ```
 
-For nested work, log the combined `N` explicitly instead of hiding a second scale variable:
+对于嵌套工作，应明确记录组合 `N`，不要隐藏第二个规模变量：
 
 ```text
 PERF_PROGRESS processed=240000 total=2000000 elapsed_sec=31.2 unit=row_param_pairs rows=120000 params=2
 ```
 
-If online instrumentation is feasible, implement it before running repeated sliced probes. If it is not feasible, state the reason in the report under `instrumentation_decision`.
+如果在线插桩可行，应先实现插桩，再重复运行切片探测。如果不可行，应在报告的 `instrumentation_decision` 中说明原因。
 
-## Classify the Program
+## 程序分类
 
-### A. Progress-Observable Programs
+### A. 进度可观察程序
 
-If the program can print progress while running, or can be cheaply changed to do so, prefer one short timeout probe instead of many sliced runs.
+如果程序能在运行时输出进度，或能以较低成本修改为输出进度，应优先执行一次短时超时探测，而不是多次切片运行。
 
-Useful progress logs are stable, low-frequency, and parseable:
+有用的进度日志应稳定、低频且便于解析：
 
 ```text
 PERF_PROGRESS processed=120000 total=1000000 elapsed_sec=31.2 rate=3846.1
 ```
 
-Procedure:
+步骤：
 
-1. Run with a short timeout, usually 30 seconds.
-2. Extract multiple `elapsed_sec -> processed_N` points from logs.
-3. Treat a timeout-killed run as useful if progress logs were captured.
-4. If throughput declines over time, extrapolate conservatively; do not extrapolate from the fastest early rate.
+1. 使用短时超时运行，通常为 30 秒。
+2. 从日志中提取多个 `elapsed_sec -> processed_N` 数据点。
+3. 如果已捕获进度日志，即使运行因超时被终止，也应将其视为有用样本。
+4. 如果吞吐量随时间下降，应保守外推；不要从早期最快速率进行外推。
 
-If progress logging is absent but the online N-T criteria are met, add it before doing repeated sliced runs. Log every 5-10 seconds, not for every item.
+如果缺少进度日志，但满足在线 N-T 条件，应先加入日志，再执行重复切片运行。每 5–10 秒记录一次，而不是每处理一个元素就记录。
 
-### B. Batch-Only Programs
+### B. 仅批量程序
 
-Use sliced data and repeated bounded runs only when online N-T instrumentation is unavailable, unsafe, or would distort the measurement.
+只有在线 N-T 插桩不可用、不安全或会扭曲测量结果时，才使用数据切片和重复的有界运行。
 
-Procedure:
+步骤：
 
-1. Identify the control for input scale, such as `--limit`, date range, file count, sample ratio, batch count, or parameter count.
-2. Start from a small `N` and expand exponentially, for example 1k, 2k, 4k, 8k.
-3. When a run times out, binary-search between the previous completed `N` and the failed `N`.
-4. Use binary search to construct reliable `N-T` samples, not to find the exact largest possible `N`.
-5. Do not waste runs trying to hit an exact second value; the goal is a scaling trend, not a precise benchmark.
+1. 找出用于控制输入规模的参数，例如 `--limit`、日期范围、文件数量、采样比例、批次数量或参数数量。
+2. 从较小的 `N` 开始，并按指数扩大，例如 1k、2k、4k、8k。
+3. 当一次运行超时时，在上一个已完成的 `N` 和失败的 `N` 之间进行二分查找。
+4. 使用二分查找构建可靠的 `N-T` 样本，而不是寻找精确的最大可行 `N`。
+5. 不要浪费运行次数去命中精确秒数；目标是获得扩展趋势，而不是精确基准测试。
 
-## Define N
+## 定义 N
 
-Before extrapolating, define the main scale variable `N`. Do not assume `N` is always row count.
+外推前，先定义主要规模变量 `N`。不要假设 `N` 始终表示行数。
 
-Common definitions include:
+常见定义包括：
 
-- input rows;
-- files or objects processed;
-- events or tasks generated;
-- parameter combinations;
-- workers, shards, or independent units;
-- training windows or batches;
-- a combined variable such as `rows x parameter_combinations x files`.
+- 输入行数；
+- 已处理的文件或对象；
+- 生成的事件或任务；
+- 参数组合；
+- 工作进程、分片或独立单元；
+- 训练窗口或批次；
+- `rows x parameter_combinations x files` 等组合变量。
 
-If the program has multiple dominant scale variables, use the combined variable that best explains the work. If `N` cannot represent the full-scale computation, mark the result `INCONCLUSIVE`.
+如果程序有多个主导规模变量，应使用最能解释工作量的组合变量。如果 `N` 无法代表全规模计算，应将结果标记为 `INCONCLUSIVE`。
 
-## Sampling Requirements
+## 采样要求
 
-Default rules:
+默认规则：
 
-- Require at least 3 completed sample points before extrapolating to full scale.
-- Prefer 3-5 completed sample points.
-- More than 5 points is usually unnecessary unless the samples are unstable.
-- Start with a 30 second timeout for probes.
-- Avoid probe nodes longer than about 180 seconds unless the user explicitly accepts the cost.
+- 外推到全规模前，至少需要 3 个已完成样本点。
+- 最好有 3–5 个已完成样本点。
+- 除非样本不稳定，否则通常不需要超过 5 个点。
+- 探测应从 30 秒超时开始。
+- 除非用户明确接受其成本，否则单个探测节点应避免超过约 180 秒。
 
-Useful time bands:
+有用的时间区间：
 
-- 30 second node: completed samples in 20-40 seconds are acceptable.
-- 60 second node: completed samples in 45-75 seconds are acceptable.
-- 120 second node: completed samples in 90-150 seconds are acceptable.
-- 180 second node: completed samples in 140-220 seconds are acceptable.
+- 30 秒节点：20–40 秒内完成的样本可接受。
+- 60 秒节点：45–75 秒内完成的样本可接受。
+- 120 秒节点：90–150 秒内完成的样本可接受。
+- 180 秒节点：140–220 秒内完成的样本可接受。
 
-Timeout samples mean `T(N) > timeout`. Do not fit them as if `T(N) = timeout`.
+超时样本表示 `T(N) > timeout`。拟合时不要把它当作 `T(N) = timeout`。
 
-Record at least:
+至少记录：
 
 ```text
 N:
@@ -136,144 +136,144 @@ slice_method:
 notes:
 ```
 
-Also record peak memory, CPU utilization, output size, and cache state when available.
+如果可以获取，还应记录峰值内存、CPU 利用率、输出大小和缓存状态。
 
-## Extrapolation Methods
+## 外推方法
 
-Do not use a single estimate. Compare at least these three views and make a conservative decision.
+不要只使用一种估算。至少比较以下三种视角，并作出保守决策。
 
-### 1. Linear Extrapolation
+### 1. 线性外推
 
 ```text
 T_full = T_last * N_full / N_last
 ```
 
-This is a lower-bound check. If even the linear estimate exceeds the budget, usually stop.
+这是下界检查。如果连线性估算都超过预算，通常应停止。
 
-### 2. Power-Law Fit
+### 2. 幂律拟合
 
 ```text
 T = a * N^p
 log(T) = log(a) + p * log(N)
 ```
 
-Use it to estimate the scaling exponent `p`.
+用它估算扩展指数 `p`。
 
-Default interpretation:
+默认解释：
 
-- `p <= 1.2`: approximately linear.
-- `1.2 < p <= 1.6`: cautious; require the target estimate to be comfortably below budget.
-- `1.6 < p <= 2.2`: high risk; usually optimize or reduce scope first.
-- `p > 2.2`: do not blindly run full scale unless `N_full` is very small.
+- `p <= 1.2`：近似线性。
+- `1.2 < p <= 1.6`：需要谨慎；目标估算必须显著低于预算。
+- `1.6 < p <= 2.2`：高风险；通常应先优化或缩小范围。
+- `p > 2.2`：除非 `N_full` 非常小，否则不要盲目全规模运行。
 
-### 3. Local-Slope Extrapolation
+### 3. 局部斜率外推
 
-Use only the largest two or three completed `N` samples to estimate late-stage growth. This catches cases where small samples are fast but larger samples degrade.
+只使用最大的两个或三个已完成 `N` 样本估算后期增长。这可发现小样本运行很快、但大样本性能下降的情况。
 
-If linear, power-law, and local-slope estimates disagree strongly, mark the result `INCONCLUSIVE` or `FAIL`. Do not approve full scale using the most optimistic estimate.
+如果线性、幂律和局部斜率估算结果差异很大，应将结果标记为 `INCONCLUSIVE` 或 `FAIL`。不要使用最乐观的估算批准全规模运行。
 
-## Go/No-Go Decision
+## 通过/不通过决策
 
-Return exactly one of:
+必须且只能返回以下一项：
 
 ```text
-PASS: Target scale may be run.
-FAIL: Do not run target scale; diagnose or optimize first.
-INCONCLUSIVE: Evidence is insufficient or unstable; do not run target scale yet.
+PASS: 可以运行目标规模。
+FAIL: 不要运行目标规模；应先诊断或优化。
+INCONCLUSIVE: 证据不足或不稳定；暂时不要运行目标规模。
 ```
 
-Default failure conditions:
+默认失败条件：
 
-- Fewer than 3 completed sample points.
-- `N` does not represent the dominant computation.
-- Linear extrapolation already exceeds `T_budget`.
-- Conservative estimate exceeds `T_budget` by more than 1.5x.
-- Scaling exponent is clearly worse than linear and `N_full` is far beyond the sampled range.
-- Samples are non-monotonic or unstable without explanation.
-- Probes suggest memory, output size, or I/O may become the bottleneck.
+- 已完成样本点少于 3 个。
+- `N` 不能代表主导计算。
+- 线性外推已经超过 `T_budget`。
+- 保守估算超过 `T_budget` 的 1.5 倍以上。
+- 扩展指数明显差于线性，且 `N_full` 远超采样范围。
+- 样本非单调或不稳定，且无法解释。
+- 探测表明内存、输出大小或 I/O 可能成为瓶颈。
 
-Default pass conditions:
+默认通过条件：
 
-- Samples are stable.
-- `N` is credible.
-- Multiple estimates are below `T_budget`.
-- The largest sample is not too far from `N_full`, or the scaling is close to linear.
+- 样本稳定。
+- `N` 可信。
+- 多种估算都低于 `T_budget`。
+- 最大样本与 `N_full` 相距不远，或扩展趋势接近线性。
 
-## Semantic Gate After Optimization
+## 优化后的语义门禁
 
-When the task moves from “can it finish?” to “make it faster,” protect the slow version’s semantics first. The slow version may be slow, but it is often clearer and more trustworthy. A faster version without a semantic check may simply produce different results faster.
+当任务从“能否完成？”转向“让它更快”时，应先保护慢速版本的语义。慢速版本虽然缓慢，但通常更清晰、更可信。没有语义检查的快速版本可能只是更快地产生了不同结果。
 
-Procedure:
+步骤：
 
-1. Before changing code, choose a small or medium sample that completes and covers key paths.
-2. Generate canonical output with the slow version and save it where the faster version cannot overwrite it.
-3. Define canonical fields, sort order, floating-point format, timestamp format, null representation, and randomness controls.
-4. If floats are present, define fixed rounding or formatting before writing canonical output, including decimal places, scientific notation, NaN/Inf representation, and negative zero handling.
-5. Generate candidate canonical output with the faster version using the same input, same parameters, and same environment assumptions.
-6. The final comparison must be byte-for-byte identical.
-7. Do not replace canonical normalization with runtime tolerance comparisons. Tolerance belongs only in the pre-write rounding or formatting rule.
-8. Until the semantic check passes, the faster version must not replace the slow version or support full-scale conclusions.
+1. 修改代码前，选择一个能够完成且覆盖关键路径的小型或中型样本。
+2. 用慢速版本生成规范输出，并将其保存在快速版本无法覆盖的位置。
+3. 定义规范字段、排序顺序、浮点数格式、时间戳格式、空值表示和随机性控制。
+4. 如果存在浮点数，在写入规范输出前定义固定的舍入或格式规则，包括小数位数、科学记数法、NaN/Inf 表示和负零处理。
+5. 使用相同输入、相同参数和相同环境假设，让快速版本生成候选规范输出。
+6. 最终比较必须逐字节相同。
+7. 不要用运行时容差比较取代规范化。容差只能体现在写入前的舍入或格式规则中。
+8. 语义检查通过前，快速版本不得取代慢速版本，也不得用于支持全规模结论。
 
-Canonical output should be small and stable. Include only what proves semantic equivalence, such as:
+规范输出应小而稳定。只包含可证明语义等价的内容，例如：
 
-- final metrics and key intermediate metrics;
-- per-item, per-task, or per-result core outputs;
-- sorted IDs, timestamps, scores, states, labels, or decisions;
-- required aggregate checksums or summary rows.
+- 最终指标和关键中间指标；
+- 每个元素、任务或结果的核心输出；
+- 排序后的 ID、时间戳、分数、状态、标签或决策；
+- 必需的聚合校验和或汇总行。
 
-Do not use huge temporary files as canonical output. Canonical output is for auditing semantics, not copying every artifact.
+不要使用巨大的临时文件作为规范输出。规范输出用于审计语义，而不是复制每项产物。
 
-Additional pass conditions after optimization:
+优化后的附加通过条件：
 
-- Slow-version canonical output exists and is preserved.
-- Faster-version candidate canonical output exists.
-- Byte-for-byte comparison passes.
-- Runtime sampling shows the faster version improves target-scale feasibility without new unexplained instability.
+- 慢速版本的规范输出存在且已保留。
+- 快速版本的候选规范输出存在。
+- 逐字节比较通过。
+- 运行时间采样表明，快速版本提高了目标规模的可行性，且没有新增无法解释的不稳定性。
 
-Additional failure conditions after optimization:
+优化后的附加失败条件：
 
-- No slow-version canonical output exists.
-- Faster-version canonical output is not byte-for-byte identical.
-- Floats were not normalized before writing canonical output.
-- Rounding or formatting rules were changed after seeing differences.
-- Only aggregate metrics are similar while important per-item outputs drift.
+- 不存在慢速版本的规范输出。
+- 快速版本的规范输出未做到逐字节相同。
+- 浮点数在写入规范输出前未经过规范化。
+- 在看到差异后修改了舍入或格式规则。
+- 只有聚合指标相近，但重要的逐元素输出发生偏移。
 
-## Optimization Priority
+## 优化优先级
 
-This skill does not prescribe fixed optimization recipes because workloads vary. It does prescribe an optimization order of operations: save compute first, then save wall-clock time.
+本技能不规定固定优化方案，因为工作负载各不相同。但它规定优化顺序：先节省算力，再缩短实际运行时间。
 
-When optimization is needed, prefer changes that reduce total work:
+需要优化时，应优先选择减少总工作量的改动：
 
-- remove repeated, redundant, or unused computation;
-- avoid unnecessary scans, joins, sorts, conversions, serialization, network calls, or disk I/O;
-- cache or precompute only when it reduces net work and does not create stale or memory-heavy behavior;
-- change data structures or algorithms when sampling, profiling, or code inspection shows avoidable growth;
-- narrow the workload using correct filters, early exits, deduplication, batching, pruning, or incremental processing.
+- 消除重复、冗余或未使用的计算；
+- 避免不必要的扫描、连接、排序、转换、序列化、网络调用或磁盘 I/O；
+- 只有在能减少净工作量，且不会造成数据陈旧或内存负担过重时，才缓存或预计算；
+- 当采样、性能分析或代码检查表明存在可避免的增长时，改变数据结构或算法；
+- 使用正确的过滤、提前退出、去重、批处理、剪枝或增量处理缩小工作负载。
 
-Use parallelism only after checking for wasted work. More workers can reduce elapsed time while increasing total CPU, memory pressure, I/O contention, and operational cost. It is appropriate when:
+只有在检查无效工作后，才使用并行。增加工作进程可以缩短耗时，但会增加 CPU 总用量、内存压力、I/O 争用和运营成本。以下情况适合采用并行：
 
-- the remaining work is necessary and independent;
-- algorithmic/workload reductions have been exhausted or are too risky for the task;
-- the bottleneck is not already memory, disk, network, lock contention, or rate limits;
-- semantic equivalence and bounded `N-T` sampling still pass under the parallel version.
+- 剩余工作是必要且相互独立的；
+- 算法或工作负载削减已用尽，或对当前任务风险过高；
+- 瓶颈并非已经出现在内存、磁盘、网络、锁争用或速率限制上；
+- 并行版本仍能通过语义等价验证和有界 `N-T` 采样。
 
-Do not present multiprocessing, multithreading, GPU use, larger machines, or more shards as the first fix unless evidence shows the work is already necessary, well-partitioned, and not waste-dominated.
+不要把多进程、多线程、GPU、更大型机器或更多分片作为首选修复方案，除非证据表明工作已经是必要的、分区合理，且并非由浪费主导。
 
-## Profiler Guidance
+## 性能分析器指引
 
-This skill does not wrap or prescribe profiler tools. However, when the gate returns `FAIL` or `INCONCLUSIVE`, especially for high complexity, declining throughput, suspected memory bottlenecks, or unstable samples, tell the user to use the existing profiler or hotspot audit tool appropriate for the project and language.
+本技能不封装也不规定性能分析工具。但当门禁返回 `FAIL` 或 `INCONCLUSIVE` 时，特别是在复杂度高、吞吐量下降、怀疑存在内存瓶颈或样本不稳定的情况下，应告知用户使用适合项目和语言的现有性能分析器或热点审计工具。
 
-Profiler use is a next-stage input, not a replacement for this gate. Keep profiling short, controlled, and reproducible:
+性能分析器是下一阶段的输入，不能取代本门禁。性能分析应保持短时、受控且可复现：
 
-- Profile a small or medium sample that reliably hits the slow path.
-- Set an explicit timeout so profiling does not become another blind full-scale run.
-- Capture hot functions, hot lines, call counts, cumulative time, allocation pressure, or I/O waits.
-- Do not rewrite semantic-sensitive code from profiler results unless canonical output exists.
-- After optimization, return to this skill: pass the canonical byte-for-byte gate, then repeat `N-T` sampling and the full-scale go/no-go decision.
+- 分析能够稳定触发慢速路径的小型或中型样本。
+- 设置明确超时，避免性能分析演变成另一次盲目的全规模运行。
+- 捕获热点函数、热点行、调用次数、累计时间、分配压力或 I/O 等待。
+- 如果没有规范输出，不要根据性能分析结果重写语义敏感代码。
+- 优化后重新使用本技能：通过规范输出逐字节门禁，然后重复 `N-T` 采样和全规模通过/不通过决策。
 
-## Report Format
+## 报告格式
 
-Use this structure:
+使用以下结构：
 
 ```text
 Performance Gate Result: PASS | FAIL | INCONCLUSIVE
@@ -313,19 +313,19 @@ Decision:
 - next_step:
 ```
 
-## Non-Goals
+## 非目标
 
-This skill does not:
+本技能不会：
 
-- wrap profiler tools;
-- provide generic optimization recipes;
-- automatically rewrite algorithms;
-- prefer parallelism before checking for wasted work;
-- prove estimates are exact;
-- encourage full-scale runs when evidence is insufficient.
+- 封装性能分析工具；
+- 提供通用优化方案；
+- 自动重写算法；
+- 在检查无效工作前优先使用并行；
+- 证明估算绝对精确；
+- 在证据不足时鼓励全规模运行。
 
-If the gate fails, recommend profiling, diagnosis, algorithm changes, progress logging, a better slicing strategy, or redefining `N`. Do not start a long target-scale run.
+如果门禁失败，应建议进行性能分析、诊断、算法修改、进度日志记录、采用更好的切片策略或重新定义 `N`。不要开始长时间的目标规模运行。
 
-## Operating Rule
+## 操作规则
 
-When the user asks to run full scale, check whether something will time out, or make slow code faster, use this skill before long execution. Treat timeouts as sampling signals, not final answers. The goal is to get decision information early and avoid wasting compute on runs that were predictable failures.
+当用户要求全规模运行、检查某项工作是否会超时或让慢速代码更快时，应在长时间执行前使用本技能。将超时视为采样信号，而不是最终答案。目标是尽早获取决策信息，避免把算力浪费在本可预见的失败运行上。

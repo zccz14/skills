@@ -1,65 +1,65 @@
-# zccz14 Skills
+# zccz14 技能集
 
-A public collection of composable Agent Skills for controlling reasoning, execution, communication, and delivery.
+一个由可组合 Agent Skills 构成的公开集合，用于控制推理、执行、沟通和交付。
 
-The collection is organized around one architectural idea: before an agent acts, reaches a conclusion, or hands work to a human, it should expose the paths, evidence, residual uncertainty, and cost that the decision depends on. Each skill owns a different boundary. They can be used independently, but their stronger use is as explicit gates inside one workflow.
+这个集合围绕一个架构思想组织：在智能体采取行动、得出结论或将工作交给人类之前，应明确展现该决策所依赖的路径、证据、剩余不确定性和成本。每项技能负责不同的边界。它们可以独立使用，但更有力的用法是作为一个工作流中的显式关卡。
 
-## Architecture
+## 架构
 
-The six skills form four planes:
+这六项技能构成四个平面：
 
-| Plane         | Skill                                                                  | Responsibility                                                                                           | Boundary it makes explicit                                                               |
-| ------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Control       | [`clean-agent`](skills/clean-agent/)                                   | Separates creation, independent review, retry, and human escalation around one shared specification.     | Whether an artifact is ready for human review.                                           |
-| Reasoning     | [`recursive-residual-reasoning`](skills/recursive-residual-reasoning/) | Preserves unexplained observations as residuals and expands them into the next reasoning space.          | What is explained, what remains open, and why reasoning stops.                           |
-| Reasoning     | [`reliable-model`](skills/reliable-model/)                             | Requires both prior rationale and empirical validation for models, rules, and research conclusions.      | How strong a claim is and what evidence could weaken it.                                 |
-| Execution     | [`clean-code`](skills/clean-code/)                                     | Treats every control-flow branch as a path that needs business justification and verification.           | Which implementation paths are necessary and which compatibility debt is collectable.    |
-| Execution     | [`faster-code`](skills/faster-code/)                                   | Uses bounded `N-T` probes for a full-scale go/no-go decision and protects semantics during optimization. | Whether a costly run is justified and whether faster code preserves canonical output.    |
-| Communication | [`clean-doc`](skills/clean-doc/)                                       | Selects and structures information for a specific reader, decision, or action.                           | What the reader needs, what can be removed, and which uncertainties must remain visible. |
+| 平面 | 技能 | 职责 | 明确的边界 |
+| --- | --- | --- | --- |
+| 控制 | [`clean-agent`](skills/clean-agent/) | 围绕同一份共享规范，将创建、独立审查、重试和人工升级分离。 | 工件是否已准备好供人工审查。 |
+| 推理 | [`recursive-residual-reasoning`](skills/recursive-residual-reasoning/) | 将未解释的观察保留为残差，并把它们扩展到下一个推理空间。 | 哪些内容已得到解释、哪些仍未解决，以及推理为何停止。 |
+| 推理 | [`reliable-model`](skills/reliable-model/) | 要求模型、规则和研究结论同时具备先验依据和实证验证。 | 声明的可信程度，以及哪些证据可能削弱它。 |
+| 执行 | [`clean-code`](skills/clean-code/) | 将每个控制流分支视为一条需要业务理由和验证的路径。 | 哪些实现路径是必要的，以及哪些兼容性债务可以回收。 |
+| 执行 | [`faster-code`](skills/faster-code/) | 使用有界的 `N-T` 探测来决定是否执行完整规模运行，并在优化期间保护语义。 | 是否有理由进行成本高昂的运行，以及更快的代码是否保留规范输出。 |
+| 沟通 | [`clean-doc`](skills/clean-doc/) | 针对特定读者、决策或行动选择并组织信息。 | 读者需要什么、可以删除什么，以及哪些不确定性必须保持可见。 |
 
 ```text
-clean-agent: control envelope from specification to reviewed delivery
+clean-agent：从规范到经审查交付的控制外壳
 |
-+-- reasoning: R3 exposes residuals; reliable-model gates model claims
-+-- execution: clean-code gates paths; faster-code gates expensive runs
-`-- communication: clean-doc shapes decision-relevant output
++-- 推理：R3 揭示残差；reliable-model 为模型声明设关
++-- 执行：clean-code 为路径设关；faster-code 为高成本运行设关
+`-- 沟通：clean-doc 塑造与决策相关的输出
 ```
 
-These planes are complementary, not interchangeable. A `clean-agent` `PASS` means the artifact is worth human review; it does not independently prove a model reliable or a full-scale run feasible. To enforce a domain gate during review, include that skill in the shared specification used by both creator and reviewer.
+这些平面相互补充，而不能彼此替代。`clean-agent` 的 `PASS` 意味着工件值得人工审查；它本身并不能证明模型可靠或完整规模运行可行。若要在审查期间执行某个领域关卡，请将该技能纳入创建者和审查者共同使用的共享规范。
 
-## How the Gates Compose
+## 关卡如何组合
 
-There is no unconditional pipeline that every task must traverse. Select the skills required by the work, then preserve this dependency order:
+不存在每个任务都必须经过的无条件流水线。请选择工作所需的技能，然后保持以下依赖顺序：
 
-1. **Establish the specification.** Define the goal, constraints, evidence sources, output, and applicable skills. For work that may need retries or independent review, `clean-agent` opens the control envelope here.
-2. **Expose unresolved reasoning.** Use R3 when the current explanation space leaves a remainder. Continue with an explicit residual, a next expansion, or a bounded stop reason instead of silently closing the gap.
-3. **Gate design and action.** Before encoding a model or rule, require the prior-rationale leg of `reliable-model`. Before adding code paths, apply the `clean-code` complexity gate. Before a costly target-scale run, apply the `faster-code` go/no-go gate.
-4. **Validate the result.** Apply the evidence standard owned by the relevant skill: empirical validation for model claims, tests or explicit reasoning for code paths, and canonical-output equivalence plus renewed runtime sampling after optimization.
-5. **Shape the handoff.** Use `clean-doc` to retain the facts, risks, residuals, and next actions that matter to the intended reader without duplicating the underlying analysis.
-6. **Close the control envelope.** When `clean-agent` is active, an independent reviewer checks the artifact against the same shared specification and returns `PASS`, `RETRY`, or `FAILED`.
+1. **确立规范。** 定义目标、约束、证据来源、输出和适用技能。对于可能需要重试或独立审查的工作，`clean-agent` 在此开启控制外壳。
+2. **揭示未解决的推理。** 当当前解释空间留下余项时使用 R3。以明确的残差、下一次扩展或有界停止理由继续，而不是悄然消除这一缺口。
+3. **为设计和行动设关。** 在编码模型或规则之前，要求满足 `reliable-model` 的先验依据部分。在添加代码路径之前，应用 `clean-code` 复杂度关卡。在执行成本高昂的目标规模运行之前，应用 `faster-code` 的执行/不执行关卡。
+4. **验证结果。** 应用相关技能所规定的证据标准：对模型声明进行实证验证，对代码路径进行测试或给出明确推理，并在优化后验证与规范输出等价以及重新进行运行时采样。
+5. **塑造交接内容。** 使用 `clean-doc` 保留对目标读者重要的事实、风险、残差和后续行动，同时不重复底层分析。
+6. **闭合控制外壳。** 启用 `clean-agent` 时，独立审查者根据同一份共享规范检查工件，并返回 `PASS`、`RETRY` 或 `FAILED`。
 
-An earlier failed gate blocks the action or conclusion that depends on it. A later presentation or delivery gate should not erase that failure. R3 is the escape path when a gate reveals an unexplained remainder: it keeps the remainder traceable without pretending that every task can be closed automatically.
+较早失败的关卡会阻止依赖它的行动或结论。后续的呈现或交付关卡不应抹去这次失败。当关卡暴露出未解释的余项时，R3 是出口路径：它让余项保持可追溯，而不假装每个任务都能自动闭合。
 
-## Adoption
+## 采用方式
 
-Install all public skills globally:
+全局安装所有公开技能：
 
 ```bash
 npx skills add zccz14/skills -g -s '*'
 ```
 
-Update installed skills:
+更新已安装的技能：
 
 ```bash
 npx skills update
 ```
 
-Start with the skill closest to the work:
+从最贴近当前工作的技能开始：
 
-- Use `clean-doc` for human-facing text and `clean-code` for coding tasks.
-- Add `reliable-model` when the work creates or judges a model, rule, score, mechanism, or research conclusion.
-- Add `faster-code` before long or unknown-scale execution, or when optimization must preserve semantics.
-- Add R3 when causes, hypotheses, or system interactions leave a meaningful unexplained residual.
-- Wrap the selected skills with `clean-agent` when first-pass failure is plausible, constraints are numerous, retries should stay out of the main Agent context, or independent review should precede human review.
+- 对面向人类的文本使用 `clean-doc`，对编码任务使用 `clean-code`。
+- 当工作创建或评判模型、规则、评分、机制或研究结论时，加入 `reliable-model`。
+- 在长时间或规模未知的执行之前，或者优化必须保留语义时，加入 `faster-code`。
+- 当原因、假设或系统交互留下有意义的未解释残差时，加入 R3。
+- 当首次尝试可能失败、约束众多、重试过程应留在主 Agent 上下文之外，或应在人工审查前进行独立审查时，用 `clean-agent` 包裹所选技能。
 
-For example, a performance-sensitive code change can use `clean-code` and `faster-code` as shared specification sources inside a `clean-agent` loop. The creator then implements against both gates, while the reviewer checks the same requirements before the result reaches a human.
+例如，一个对性能敏感的代码变更可以在 `clean-agent` 循环中使用 `clean-code` 和 `faster-code` 作为共享规范来源。创建者随后依据这两个关卡进行实现，审查者则在结果交给人类之前检查相同的要求。

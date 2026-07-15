@@ -1,13 +1,13 @@
 ---
 name: cz-git-style
-description: Enforce CZ's Git and GitHub delivery style with gitmoji commits, protected main, repository-local worktrees, squash-only Auto Merge, pull-request monitoring, GitHub Actions verification, and safe cleanup. Use whenever Codex sets up or updates a GitHub repository, creates a feature worktree, prepares or opens a pull request, follows a pull request through merge and Actions, or performs the associated Git workflow.
+description: 强制执行 CZ 的 Git 和 GitHub 交付风格，包括 gitmoji 提交、受保护的 main、仓库本地 worktree、仅 Squash 的 Auto Merge、拉取请求监控、GitHub Actions 验证和安全清理。每当 Codex 设置或更新 GitHub 仓库、创建功能 worktree、准备或发起拉取请求、跟进拉取请求直至合并并完成 Actions，或执行相关 Git 工作流时，都应使用本技能。
 ---
 
-# CZ Git Style
+# CZ Git 风格
 
-Use the bundled short Bash scripts for routine happy paths. Require Bash 3.2 or newer, `git`, `gh`, authenticated GitHub access, and the permissions needed by the requested operation. JSON selection runs inside `gh`; external `jq` is not required.
+常规顺利流程应使用随附的简短 Bash 脚本。要求 Bash 3.2 或更高版本、`git`、`gh`、已通过身份验证的 GitHub 访问权限，以及请求操作所需的权限。JSON 选择在 `gh` 内部执行；不需要外部 `jq`。
 
-Resolve the bundled `scripts/` directory from this loaded `SKILL.md` to an absolute path without changing the target repository's working directory, then set:
+根据已加载的 `SKILL.md` 将随附的 `scripts/` 目录解析为绝对路径，且不要更改目标仓库的工作目录，然后设置：
 
 ```bash
 CZ_GIT_STYLE_SCRIPTS="/absolute/path/to/loaded/cz-git-style/scripts"
@@ -18,63 +18,63 @@ CZ_GIT_STYLE_SCRIPTS="/absolute/path/to/loaded/cz-git-style/scripts"
 "$CZ_GIT_STYLE_SCRIPTS/follow-pr.sh" --help
 ```
 
-Replace the example path with the actual resolved skill path before execution. Keep `cwd` at the target repository for every workflow command. Run the relevant script's `--help` before guessing an argument.
+执行前，将示例路径替换为实际解析出的技能路径。每条工作流命令的 `cwd` 都应保持为目标仓库。不要猜测参数；先运行相关脚本的 `--help`。
 
-## Coordinate implementation work
+## 协调实现工作
 
-Use `clean-agent` coordination mode for code or document creation and editing. Give creator and reviewer SubAgents this skill as a shared specification. Keep commit-message selection with the creator because its meaning depends on the change.
+创建和编辑代码或文档时，使用 `clean-agent` 协调模式。把本技能作为共享规范交给创建者和审查者 SubAgent。提交消息的选择应由创建者负责，因为其含义取决于具体改动。
 
-## Commit style
+## 提交风格
 
-Follow the standard [gitmoji convention](https://gitmoji.dev/) and select the gitmoji semantically.
+遵循标准 [gitmoji 惯例](https://gitmoji.dev/)，并根据语义选择 gitmoji。
 
-## Commit boundary
+## 提交边界
 
-Commit changed tracked files and intended new files before declaring work complete or handing it to a human. During active edits or a `clean-agent` `RETRY`, continue without checkpoint commits. Before delivering `PASS` or escalating `FAILED`, commit the current state; create no empty commit for read-only or unchanged work. Let AI choose the commit meaning and standard gitmoji—do not automate commit creation.
+在声明工作完成或交给人类之前，提交已修改的跟踪文件和预期新增文件。编辑仍在进行或处于 `clean-agent` `RETRY` 阶段时，继续工作，不要创建检查点提交。在交付 `PASS` 或升级 `FAILED` 前，提交当前状态；对于只读工作或没有改动的工作，不要创建空提交。由 AI 选择提交含义和标准 gitmoji——不要自动化创建提交。
 
-## Set up repository policy
+## 设置仓库策略
 
-Run from the intended main checkout:
+在预期的 main 检出目录中运行：
 
 ```bash
 "$CZ_GIT_STYLE_SCRIPTS/setup-repo.sh" --repo OWNER/REPO
 ```
 
-Run this desired-state setup for new or existing repositories. Pass `--visibility public|private|internal` only when the GitHub repository may need creation; setup requires it before creating a repository. It never replaces a different `origin`. Repeated runs converge the policy files, repository settings, and the single repository-owned `cz-git-style` ruleset. The ruleset requires PRs, linear history, and the fixed `pr-check` status while blocking deletion and force-push. The generated `.github/workflows/pr-check.yml` runs that minimal synchronization gate on every pull request; it does not replace project validation.
+新仓库或现有仓库都应运行这项期望状态设置。只有在可能需要创建 GitHub 仓库时才传入 `--visibility public|private|internal`；创建仓库前，设置流程要求提供此参数。它绝不会替换其他 `origin`。重复运行会使策略文件、仓库设置和唯一一个由仓库拥有的 `cz-git-style` 规则集收敛到期望状态。该规则集要求使用 PR、线性历史记录和固定的 `pr-check` 状态，同时禁止删除和强制推送。生成的 `.github/workflows/pr-check.yml` 会在每个拉取请求上运行这一最小同步门禁；它不能取代项目验证。
 
-Workflow scripts do not create semantic code or documentation commits. The sole exception is `setup-repo.sh`: when policy files drift, it commits only `.gitignore` and `.github/workflows/pr-check.yml`; unchanged setup creates no commit or push.
+工作流脚本不会创建具有语义含义的代码或文档提交。唯一例外是 `setup-repo.sh`：当策略文件发生漂移时，它只会提交 `.gitignore` 和 `.github/workflows/pr-check.yml`；如果设置未发生变化，则不会创建提交或推送。
 
-## Deliver a change
+## 交付改动
 
-1. Start from the clean `main` checkout and create a branch worktree from updated `origin/main`:
+1. 从干净的 `main` 检出目录开始，基于更新后的 `origin/main` 创建分支 worktree：
 
    ```bash
    "$CZ_GIT_STYLE_SCRIPTS/start-worktree.sh" short-feature-name
    ```
 
-2. Work inside `.worktrees/short-feature-name`, validate the change, and create semantic gitmoji commits.
-3. Open the PR only after validation is complete:
+2. 在 `.worktrees/short-feature-name` 中工作，验证改动，并创建具有语义含义的 gitmoji 提交。
+3. 只有验证完成后才发起 PR：
 
    ```bash
    "$CZ_GIT_STYLE_SCRIPTS/open-pr.sh" --validated
    ```
 
-4. Return to any checkout and follow the PR through Auto Merge and post-merge Actions:
+4. 返回任意检出目录，跟进 PR，直至 Auto Merge 和合并后的 Actions 完成：
 
    ```bash
    "$CZ_GIT_STYLE_SCRIPTS/follow-pr.sh" PR_URL 1800 15
    ```
 
-5. Update local `main` after Actions succeed:
+5. Actions 成功后更新本地 `main`：
 
    ```bash
    "$CZ_GIT_STYLE_SCRIPTS/sync-main.sh"
    ```
 
-Treat `--validated` as an attestation, not a request to run validation. `open-pr.sh` pushes the current branch, creates a PR, and enables Squash Auto Merge for the current HEAD. `follow-pr.sh` uses `gh run view` to poll Actions within the same bounded deadline used for merge and run discovery. It does not remove local worktrees or branches.
+将 `--validated` 视为一项证明，而不是运行验证的请求。`open-pr.sh` 会推送当前分支、创建 PR，并为当前 HEAD 启用 Squash Auto Merge。`follow-pr.sh` 使用 `gh run view` 轮询 Actions；轮询、合并和工作流运行发现共用同一个有界截止时间。它不会移除本地 worktree 或分支。
 
-## Handle failures
+## 处理失败
 
-Stop when a script fails. Preserve raw `git`/`gh` stdout, stderr, and current state; let AI inspect the actual repository and choose the soft recovery. Do not rewrite a temporary script, weaken policy, or bypass a gate.
+脚本失败时立即停止。保留原始 `git`/`gh` 标准输出、标准错误和当前状态；由 AI 检查仓库实际情况，并选择温和的恢复方式。不要重写临时脚本、弱化策略或绕过门禁。
 
-Manage automation by return on investment: automate failures only when they recur often and their recovery steps have become stable. Hand first-time, low-frequency, or context-dependent errors to AI. Add a recovery path to these scripts only after repeated evidence shows that the fix has converged; do not turn this principle into another decision tree.
+根据投资回报管理自动化：只有当故障频繁复现，且恢复步骤已经稳定时，才将故障处理自动化。首次出现、低频或依赖上下文的错误应交给 AI。只有在反复证据表明修复方式已经收敛后，才向这些脚本添加恢复路径；不要把这一原则变成另一棵决策树。

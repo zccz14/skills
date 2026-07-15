@@ -1,265 +1,265 @@
 ---
 name: recursive-residual-reasoning
 description: >-
-  Use this skill when a task involves hard reasoning, unclear causes, unexplained observations, failed hypotheses, ambiguous diagnoses, complex systems, emergent behavior, investigation planning, or any situation where the current explanation space is incomplete. This skill applies Recursive Residual Reasoning: preserve what cannot yet be explained as an explicit residual, expand that residual into the next reasoning space, and produce a traceable path from observation to conclusion, action, or bounded stop reason.
+  当任务涉及困难推理、原因不明、无法解释的观测、失败的假设、模糊诊断、复杂系统、涌现行为、调查规划，或当前解释空间不完整的任何情形时，请使用此技能。此技能应用递归残差推理：将尚未解释的内容保留为显式残差，把该残差扩展为下一个推理空间，并生成一条从观测到结论、行动或有界停止原因的可追踪路径。
 ---
 
-# Recursive Residual Reasoning
+# 递归残差推理
 
-Use Recursive Residual Reasoning, R3, when ordinary reasoning reaches an unexplained remainder. R3 treats that remainder as a first-class residual, not as a failure, vague unknown, or discard pile.
+当常规推理遇到无法解释的剩余部分时，使用递归残差推理（Recursive Residual Reasoning，R3）。R3 将该剩余部分视为一等残差，而不是失败、模糊的未知项或废弃项集合。
 
-## Core Idea
+## 核心理念
 
-Reasoning does not stop at the unknown. The residual becomes the object and generator of the next reasoning space.
+推理不会止步于未知。残差会成为下一个推理空间的对象和生成器。
 
-R3 is a reasoning paradigm for transforming confusion into a traceable path:
+R3 是一种将困惑转化为可追踪路径的推理范式：
 
 ```text
-observation
-→ current reasoning space
-→ explained part + residual
-→ residual expansion
-→ next reasoning space
-→ conclusion, action, or bounded stop reason
+观测
+→ 当前推理空间
+→ 已解释部分 + 残差
+→ 残差扩展
+→ 下一个推理空间
+→ 结论、行动或有界停止原因
 ```
 
-For the full domain-neutral method, use `docs/r3.md`. For the project data file format, use `docs/r3-data-file.md` and `templates/r3.system.yaml`.
+完整的领域无关方法请参阅 `docs/r3.md`。项目数据文件格式请参阅 `docs/r3-data-file.md` 和 `templates/r3.system.yaml`。
 
-## Minimal Formal Model
+## 最小形式化模型
 
-R3 can be modeled as:
+R3 可建模为：
 
 ```text
 R3 = (U, Ω, X, τ, T)
 ```
 
-Where:
+其中：
 
-| Symbol | Meaning |
+| 符号 | 含义 |
 | --- | --- |
-| `U` | Universe of reasoning objects: observations, hypotheses, evidence, nodes, conclusions, actions, stop reasons, and traces. |
-| `Ω` | Closed operations over `U`, such as classify, explain, decompose, combine, test, expand, close, and trace. |
-| `X` | Residual elements: explicit parts not explained by the current reasoning space. |
-| `τ` | Residual expansion operator: maps a residual into a new reasoning space. |
-| `T` | Terminal set: conclusions, actions, formal closures, or bounded stop reasons. |
+| `U` | 推理对象的全集：观测、假设、证据、节点、结论、行动、停止原因和轨迹。 |
+| `Ω` | `U` 上的闭合运算，例如分类、解释、分解、组合、检验、扩展、闭合和追踪。 |
+| `X` | 残差元素：当前推理空间尚未解释的显式部分。 |
+| `τ` | 残差扩展算子：将残差映射到新的推理空间。 |
+| `T` | 终止集合：结论、行动、形式化闭合或有界停止原因。 |
 
-The important move is:
+关键转换是：
 
 ```text
-unknown → residual → next reasoning space
+未知 → 残差 → 下一个推理空间
 ```
 
-## R3 Principles
+## R3 原则
 
-1. Keep the reasoning space explicit.
-   State what concepts, hypotheses, rules, evidence, or models are currently allowed to explain the observation.
+1. 明确说明推理空间。
+   陈述当前允许用哪些概念、假设、规则、证据或模型来解释观测。
 
-2. Separate explained parts from residuals.
-   Do not compress the unexplained part into phrases like "unclear", "miscellaneous", "edge case", or "probably noise". Name it as a residual.
+2. 将已解释部分与残差分开。
+   不要把未解释部分压缩成“尚不明确”“杂项”“边缘情况”或“可能是噪声”等措辞。应将其明确命名为残差。
 
-3. Expand residuals recursively.
-   A residual should become the entry point to a new reasoning space with its own candidate explanations, evidence needs, tests, and stop criteria.
+3. 递归扩展残差。
+   残差应成为新推理空间的入口，该空间有自己的候选解释、证据需求、检验方法和停止条件。
 
-4. Treat interactions as first-class.
-   If components or hypotheses are individually plausible but jointly produce a new phenomenon, place the issue in an interaction space rather than blaming either part alone.
+4. 将交互视为一等对象。
+   如果各个组件或假设单独看来合理，但组合后产生了新现象，应将问题置于交互空间，而不是归咎于其中任何一方。
 
-5. Preserve the trace.
-   The output should show the path from observation to reasoning space, residual, expansion, and terminal state. The trace is part of the result.
+5. 保留轨迹。
+   输出应展示从观测到推理空间、残差、扩展和终止状态的路径。轨迹是结果的一部分。
 
-6. Stop explicitly.
-   If the residual cannot be expanded now, close with a bounded stop reason such as insufficient evidence, insufficient model, insufficient sample, excessive cost, or out-of-scope boundary.
+6. 明确停止。
+   如果当前无法扩展残差，应以有界停止原因闭合，例如证据不足、模型不足、样本不足、成本过高或超出范围边界。
 
-7. Record evidence availability.
-   Distinguish evidence available before or during the relevant decision from evidence known only after the decision or produced later by modeling, inference, simulation, or reconstruction.
+7. 记录证据的可用时点。
+   区分相关决策之前或期间可用的证据，与仅在决策之后得知，或后来通过建模、推断、模拟或重构生成的证据。
 
-8. Separate single-node claims from multi-node changes.
-   If an action changes or depends on multiple nodes, route the trace through a combination space unless the effects are explicitly separated.
+8. 区分单节点主张与多节点变更。
+   如果一项行动会改变多个节点或依赖多个节点，除非已明确分离各项影响，否则应通过组合空间路由轨迹。
 
-## Project R3 Data File
+## 项目 R3 数据文件
 
-When applying R3 inside a project, require the project to maintain an R3 data file. Prefer this path:
+在项目内应用 R3 时，要求项目维护一个 R3 数据文件。首选路径为：
 
 ```text
 r3.system.yaml
 ```
 
-The data file records the project's R3 algebra system. It should contain:
+数据文件记录项目的 R3 代数系统。它应包含：
 
-- `system`: boundary, target classes, observation capacity, maximum recursion depth, and reasoning cost limit
-- `nodes`: atomic nodes, residual nodes, combination nodes, and terminal nodes
-- `combination_spaces`: temporal, priority, interaction, state, context, feedback, or other relation spaces
-- `relations`: parent-child, refinement, expansion, decomposition, conflict, adjacency, and closure relations
-- `stop_reasons`: bounded reasons for ending unresolved recursion
-- `trace_requirements`: fields every R3 analysis must record
-- `open_residuals`: residuals that are known but not yet expanded
-- `known_traces`: accepted or frozen reasoning paths
-- `priority_expansions`: residuals or nodes that should be expanded next
-- `coverage`: target-class coverage and relative completeness records
-- `deprecated_nodes`: stable-node replacement history
+- `system`：边界、目标类别、观测能力、最大递归深度和推理成本上限
+- `nodes`：原子节点、残差节点、组合节点和终止节点
+- `combination_spaces`：时序、优先级、交互、状态、上下文、反馈或其他关系空间
+- `relations`：父子、细化、扩展、分解、冲突、邻接和闭合关系
+- `stop_reasons`：结束未解决递归的有界原因
+- `trace_requirements`：每次 R3 分析都必须记录的字段
+- `open_residuals`：已知但尚未扩展的残差
+- `known_traces`：已接受或已冻结的推理路径
+- `priority_expansions`：接下来应扩展的残差或节点
+- `coverage`：目标类别覆盖范围和相对完整性记录
+- `deprecated_nodes`：稳定节点的替换历史
 
-If the project has no R3 data file and the task needs persistent reasoning structure, create one from `templates/r3.system.yaml` before treating the analysis as complete. If the project already has an R3 data file, read it first, use its node IDs and relations, and update it when new nodes, residuals, or expansion relations are introduced.
+如果项目没有 R3 数据文件，而任务需要持久化推理结构，请先根据 `templates/r3.system.yaml` 创建一个，再将分析视为完成。如果项目已有 R3 数据文件，请先读取它，使用其中的节点 ID 和关系，并在引入新节点、残差或扩展关系时更新该文件。
 
-Do not let the data file become a prose-only document. Keep stable IDs and explicit relations so agents can use it as the project's reasoning map.
+不要让数据文件变成只有散文的文档。应保留稳定 ID 和显式关系，使 Agent 能够将其用作项目的推理地图。
 
-## Rebuild R3 Data
+## 重建 R3 数据
 
-An agent may rebuild the project R3 data file when the user asks to rebuild it, when the file is missing, when it is structurally invalid, or when it is clearly stale relative to project documents and accepted traces.
+当用户要求重建、文件缺失、文件结构无效，或相对于项目文档和已接受轨迹显然过时时，Agent 可以重建项目的 R3 数据文件。
 
-Rebuild means reconstructing the R3 data file from project evidence, not inventing a new theory from scratch. Use sources such as project instructions, architecture notes, investigation records, accepted traces, decision logs, issue taxonomies, or existing R3/RCAS-style documents.
+重建是指根据项目证据重新构造 R3 数据文件，而不是从头虚构一套新理论。可使用项目指令、架构说明、调查记录、已接受轨迹、决策日志、问题分类体系，或现有 R3/RCAS 风格文档等来源。
 
-When rebuilding:
+重建时：
 
-1. Inventory source material.
-   Record which files, records, or conversations were used.
+1. 盘点源材料。
+   记录使用了哪些文件、记录或对话。
 
-2. Extract the system boundary, target classes, observation capacity, maximum depth, and reasoning cost policy.
+2. 提取系统边界、目标类别、观测能力、最大深度和推理成本策略。
 
-3. Extract or infer nodes, residuals, combination spaces, stop reasons, relations, known traces, priority expansions, coverage records, and deprecated nodes.
+3. 提取或推断节点、残差、组合空间、停止原因、关系、已知轨迹、优先扩展项、覆盖范围记录和已弃用节点。
 
-4. Preserve stable IDs when a prior data file or accepted trace references them.
+4. 如果先前的数据文件或已接受轨迹引用了稳定 ID，请保留这些 ID。
 
-5. If an old ID cannot be preserved, add a `deprecated_nodes` entry with `old_id`, `replaced_by`, and `reason`.
+5. 如果无法保留旧 ID，请添加一条包含 `old_id`、`replaced_by` 和 `reason` 的 `deprecated_nodes` 记录。
 
-6. Mark uncertain reconstructions as residuals or `needs_review`; do not silently convert weak evidence into confirmed nodes.
+6. 将不确定的重构标记为残差或 `needs_review`；不要悄然把薄弱证据转化为已确认节点。
 
-7. Add a `rebuild_history` entry with sources, summary, preserved IDs, renamed IDs, unresolved gaps, and timestamp or version.
+7. 添加一条 `rebuild_history` 记录，其中包含来源、摘要、保留的 ID、重命名的 ID、未解决缺口以及时间戳或版本。
 
-8. After rebuilding, run an R3 consistency pass: every non-residual node has observable, rule, and action; every residual has an expansion or bounded stop reason; every combination space decomposes; every target class has coverage or a residual.
+8. 重建后，执行一次 R3 一致性检查：每个非残差节点都有可观测项、规则和行动；每个残差都有扩展或有界停止原因；每个组合空间都能分解；每个目标类别都有覆盖项或残差。
 
-## Workflow
+## 工作流程
 
-Follow this workflow when applying R3.
+应用 R3 时，请遵循以下工作流程。
 
-1. State the observation.
-   Write the phenomenon or problem in neutral terms before assigning cause.
+1. 陈述观测。
+   在归因之前，用中性措辞写出该现象或问题。
 
-2. Load or define the current reasoning space.
-   If the project has an R3 data file, read it and use its nodes and relations. If not, define the initial space and create a data file when the reasoning structure should persist.
+2. 加载或定义当前推理空间。
+   如果项目有 R3 数据文件，请读取它并使用其中的节点和关系。否则，定义初始空间；当推理结构需要持久化时，创建数据文件。
 
-3. Rebuild the R3 data file if needed.
-   If the data file is missing, invalid, stale, or the user asks for reconstruction, rebuild it from project evidence before using it as authoritative.
+3. 必要时重建 R3 数据文件。
+   如果数据文件缺失、无效、过时，或用户要求重构，请先根据项目证据重建，再将其作为权威依据使用。
 
-4. Define the current reasoning space.
-   List the candidate explanations, components, hypotheses, rules, or models currently allowed.
+4. 定义当前推理空间。
+   列出当前允许考虑的候选解释、组件、假设、规则或模型。
 
-5. Map the explained part.
-   Identify which parts of the observation are explained by the current space, and cite the evidence or rule used.
+5. 映射已解释部分。
+   识别观测中的哪些部分已由当前空间解释，并引用所用证据或规则。
 
-6. Name the residual.
-   State what remains unexplained. Give the residual a concise name.
+6. 命名残差。
+   陈述尚未解释的内容。为残差起一个简洁名称。
 
-7. Choose the residual route.
-   Route the residual to one of these spaces:
-   - missing evidence
-   - missing concept or model
-   - interaction between known parts
-   - temporal or ordering issue
-   - boundary or scope issue
-   - insufficient sample
-   - excessive reasoning cost
+7. 选择残差路由。
+   将残差路由到以下空间之一：
+   - 缺失证据
+   - 缺失概念或模型
+   - 已知部分之间的交互
+   - 时序或顺序问题
+   - 边界或范围问题
+   - 样本不足
+   - 推理成本过高
 
-8. Expand the residual.
-   Define a new reasoning space for the residual: candidate explanations, needed evidence, tests, and possible terminal states.
+8. 扩展残差。
+   为残差定义新的推理空间：候选解释、所需证据、检验方法和可能的终止状态。
 
-9. Check evidence availability.
-   Label key evidence as `before_decision`, `during_decision`, `after_decision`, or `synthetic_or_inferred`. Do not treat post-hoc evidence as operational evidence unless availability is proven.
+9. 检查证据可用性。
+   将关键证据标记为 `before_decision`、`during_decision`、`after_decision` 或 `synthetic_or_inferred`。除非已证明证据当时可用，否则不要把事后证据视为运行时证据。
 
-10. Check handled and not-handled nodes.
-   Record the handled node, neighboring nodes not handled, and all changed nodes. If multiple nodes are changed and effects are not separated, route through a combination space.
+10. 检查已处理与未处理节点。
+   记录已处理节点、未处理的相邻节点以及所有已变更节点。如果多个节点发生变化且影响未分离，请通过组合空间进行路由。
 
-11. Update the R3 data file.
-   Add any new node, residual, combination space, relation, stop reason, or trace requirement created by this reasoning pass.
+11. 更新 R3 数据文件。
+   添加本轮推理新建的任何节点、残差、组合空间、关系、停止原因或轨迹要求。
 
-12. Close or recurse.
-   End at a conclusion, action, formal closure, or bounded stop reason. If still unresolved and worth pursuing, repeat the workflow at the next layer.
+12. 闭合或递归。
+   以结论、行动、形式化闭合或有界停止原因结束。如果问题仍未解决且值得继续探索，请在下一层重复该工作流程。
 
-## Output Template
+## 输出模板
 
-When the user asks for an R3 analysis, use this structure unless a different format is more useful:
-
-```markdown
-## Observation
-<neutral statement of the phenomenon>
-
-## R3 Data File
-<path used, missing, created, or updated>
-
-## Current Reasoning Space
-<candidate explanations, concepts, rules, or models currently considered>
-
-## Handled Scope
-<handled node, not-handled neighboring nodes, changed nodes, and whether this is a single-node or combination-space trace>
-
-## Explained Part
-<what the current space explains, with evidence>
-
-## Evidence Boundary
-<key evidence and availability: before_decision, during_decision, after_decision, or synthetic_or_inferred>
-
-## Residual
-<what remains unexplained, named explicitly>
-
-## Residual Expansion
-<next reasoning space generated from the residual>
-
-## Trace
-<observation → current space → explained part/residual → expansion → terminal state>
-
-## Closure
-<conclusion, action, formal closure, or bounded stop reason>
-```
-
-## Handling Emergent Behavior
-
-When two parts are individually normal but jointly produce a new phenomenon, do not force the explanation into either part alone.
-
-Use this form:
-
-```text
-P(A) = not observed
-P(B) = not observed
-P(A, B) = observed
-```
-
-Then route the residual to an interaction space:
-
-```text
-emergent phenomenon
-→ interaction residual
-→ timing, ordering, coupling, feedback, shared state, threshold, or context dependency
-→ testable next reasoning space
-```
-
-## What To Avoid
-
-- Do not treat "unknown" as a terminal answer when the task needs reasoning.
-- Do not hide residuals inside generic buckets like "other" or "misc".
-- Do not blame a single component when the evidence only supports an interaction.
-- Do not expand forever. Use explicit stop reasons when evidence, model, sample, scope, or cost prevents useful recursion.
-- Do not use domain-specific assumptions unless the user provides them. R3 is domain-neutral.
-- Do not introduce new reasoning nodes only in the final prose when the project needs a persistent R3 system. Add them to the R3 data file.
-- Do not change stable node IDs after traces have referenced them. Add new nodes or relations instead.
-- Do not claim a single-node explanation when the action changed multiple nodes and the effects were not separated.
-- Do not use post-hoc evidence as if it were available at the decision point.
-- Do not present a durable conclusion without the full trace record.
-- Do not rebuild R3 data by guessing. Every rebuilt node or relation should either cite a source, preserve an accepted trace, or be marked as residual or `needs_review`.
-
-## Compact Response Mode
-
-For quick conversations, use a shorter form:
+当用户要求进行 R3 分析时，除非其他格式更合适，否则使用以下结构：
 
 ```markdown
-Observation: ...
-R3 data file: ...
-Current space: ...
-Handled scope: ...
-Evidence boundary: ...
-Residual: ...
-Next expansion: ...
-Trace: ...
-Closure: ...
+## 观测
+<对现象的中性陈述>
+
+## R3 数据文件
+<使用的路径，或说明文件缺失、已创建或已更新>
+
+## 当前推理空间
+<当前考虑的候选解释、概念、规则或模型>
+
+## 已处理范围
+<已处理节点、未处理的相邻节点、已变更节点，以及这属于单节点轨迹还是组合空间轨迹>
+
+## 已解释部分
+<当前空间已解释的内容及相关证据>
+
+## 证据边界
+<关键证据及其可用性：before_decision、during_decision、after_decision 或 synthetic_or_inferred>
+
+## 残差
+<尚未解释且已明确命名的内容>
+
+## 残差扩展
+<由残差生成的下一个推理空间>
+
+## 轨迹
+<观测 → 当前空间 → 已解释部分/残差 → 扩展 → 终止状态>
+
+## 闭合
+<结论、行动、形式化闭合或有界停止原因>
 ```
 
-## Name
+## 处理涌现行为
 
-Recursive Residual Reasoning is abbreviated as R3. Prefer the full name on first use because it is clearer for agents and avoids overloaded abbreviations.
+当两个部分各自正常，但组合后产生新现象时，不要强行将解释归入其中任何一方。
+
+使用以下形式：
+
+```text
+P(A) = 未观测到
+P(B) = 未观测到
+P(A, B) = 已观测到
+```
+
+然后将残差路由到交互空间：
+
+```text
+涌现现象
+→ 交互残差
+→ 时序、顺序、耦合、反馈、共享状态、阈值或上下文依赖
+→ 可检验的下一个推理空间
+```
+
+## 应避免的做法
+
+- 当任务需要推理时，不要把“未知”当作最终答案。
+- 不要把残差藏在“其他”或“杂项”等通用类别中。
+- 当证据只支持交互作用时，不要归咎于单个组件。
+- 不要无限扩展。当证据、模型、样本、范围或成本阻止有用的递归时，应使用显式停止原因。
+- 除非用户提供，否则不要使用领域特定假设。R3 与领域无关。
+- 当项目需要持久化 R3 系统时，不要只在最终散文中引入新的推理节点。应将其添加到 R3 数据文件。
+- 在轨迹已经引用稳定节点 ID 后，不要更改这些 ID。应改为添加新节点或关系。
+- 如果一项行动改变了多个节点且影响未分离，不要声称这是单节点解释。
+- 不要把事后证据当作决策时可用的证据。
+- 不要在缺少完整轨迹记录的情况下提出持久性结论。
+- 不要凭猜测重建 R3 数据。每个重建的节点或关系都应引用来源、保留已接受轨迹，或标记为残差或 `needs_review`。
+
+## 精简响应模式
+
+对于快速对话，使用较短的形式：
+
+```markdown
+观测：...
+R3 数据文件：...
+当前空间：...
+已处理范围：...
+证据边界：...
+残差：...
+下一步扩展：...
+轨迹：...
+闭合：...
+```
+
+## 名称
+
+Recursive Residual Reasoning 的简称为 R3。首次使用时优先采用全称，因为这对 Agent 更清晰，也能避免简称含义过载。
